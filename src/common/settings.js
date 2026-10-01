@@ -6,6 +6,8 @@
  * kept in chrome.storage.local.
  */
 
+import { guard, guardSync } from './runtime.js';
+
 export const LOCAL_KEYS = ['customCss'];
 
 export const DEFAULTS = {
@@ -105,9 +107,12 @@ export async function getSettings() {
 export async function setSettings(patch) {
   const { sync, local } = splitByArea(patch);
   const writes = [];
-  if (Object.keys(sync).length) writes.push(chrome.storage.sync.set(sync));
-  if (Object.keys(local).length) writes.push(chrome.storage.local.set(local));
+  if (Object.keys(sync).length) writes.push(guard(() => chrome.storage.sync.set(sync)));
+  if (Object.keys(local).length) writes.push(guard(() => chrome.storage.local.set(local)));
   await Promise.all(writes);
+  // The cache is still updated when the write could not happen, so a viewer
+  // whose extension has been reloaded keeps honouring choices made in it for
+  // the rest of the page's life, even though nothing is persisted.
   if (cache) cache = { ...cache, ...patch };
 }
 
@@ -127,7 +132,7 @@ export async function resetSettings() {
  */
 export function onSettingsChanged(callback) {
   if (!listeners.size) {
-    chrome.storage.onChanged.addListener((changes, area) => {
+    guardSync(() => chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'sync' && area !== 'local') return;
       const patch = {};
       for (const [key, { newValue }] of Object.entries(changes)) {
@@ -137,7 +142,7 @@ export function onSettingsChanged(callback) {
       if (!Object.keys(patch).length) return;
       cache = { ...(cache || DEFAULTS), ...patch };
       for (const fn of listeners) fn({ ...cache }, patch);
-    });
+    }));
   }
   listeners.add(callback);
   return () => listeners.delete(callback);

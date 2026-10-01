@@ -87,7 +87,10 @@ async function decide(likelyByUrl) {
     await app.boot({ source, url: location.href, contentType });
     revealDocument();
   } catch (error) {
-    console.error('[Markdown Lens] failed to render this document:', error);
+    // An extension reloaded mid-navigation leaves its own chrome-extension://
+    // URLs unreachable. Nothing is wrong with the document, so reveal it and
+    // say nothing; only a genuine failure is worth a console error.
+    if (chrome.runtime?.id) console.error('[Markdown Lens] failed to render this document:', error);
     revealDocument();
   }
 }

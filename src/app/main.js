@@ -12,6 +12,7 @@ import { buildToc } from './toc.js';
 import { enhance } from './enhance.js';
 import { formatValue } from './frontmatter.js';
 import { createWatcher } from './watch.js';
+import { extensionAlive, guard } from '../common/runtime.js';
 
 const state = {
   settings: null,
@@ -56,7 +57,7 @@ export async function boot(context) {
       toggleScheme: () => toggleScheme(),
       toggleRaw: () => toggleRaw(),
       reload: () => (state.onRequestOpen ? state.onRequestOpen() : reloadFromDisk()),
-      openSettings: () => chrome.runtime.sendMessage({ type: 'open-options' }).catch(() => {}),
+      openSettings: () => guard(() => chrome.runtime.sendMessage({ type: 'open-options' })),
       setTheme: (id) => setSettings({ theme: id }),
       setCodeTheme: (id) => setSettings({ codeTheme: id }),
       previewCodeTheme: (id) => previewCodeTheme(id),
@@ -338,13 +339,18 @@ async function restoreScroll() {
     if (typeof top === 'number' && top > 0) window.scrollTo({ top });
   } catch { /* session storage unavailable */ }
 
+  // Detaching matters as much as not throwing: once the extension is gone it
+  // is never coming back for this page, so the listener should go with it
+  // rather than fail on every scroll for as long as the document is open.
+  const detach = new AbortController();
   let pending = null;
   window.addEventListener('scroll', () => {
     clearTimeout(pending);
-    pending = setTimeout(() => {
-      chrome.storage.session.set({ [scrollKey()]: window.scrollY }).catch(() => {});
+    pending = setTimeout(async () => {
+      if (!extensionAlive()) return detach.abort();
+      await guard(() => chrome.storage.session.set({ [scrollKey()]: window.scrollY }));
     }, 250);
-  }, { passive: true });
+  }, { passive: true, signal: detach.signal });
 }
 
 /* ------------------------------------------------------------ live edit */
@@ -400,6 +406,7 @@ function installKeyboardShortcuts() {
 }
 
 function installMessageBridge() {
+  if (!extensionAlive()) return;
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     switch (message?.type) {
       case 'ping':

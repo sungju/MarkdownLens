@@ -802,16 +802,78 @@ async function checkPopupBridge(client, urls) {
 
 /* -------------------------------------------------------------------- main */
 
+/**
+ * Reloading the extension orphans the content scripts already in a page, and
+ * every `chrome.*` call then throws synchronously — which is why a trailing
+ * `.catch()` used to miss it and leave an uncaught error on the page.
+ *
+ * This runs in Node rather than the browser because an extension cannot be
+ * made to orphan itself on demand: `chrome.runtime.id` is read-only, and
+ * unloading the extension mid-run would take the harness down with it. The
+ * failure is pure logic, so a fake `chrome` reproduces it exactly.
+ */
+async function checkOrphanedContext() {
+  const { extensionAlive, guard, guardSync } =
+    await import(new URL('../src/common/runtime.js', import.meta.url));
+
+  const invalidated = () => { throw new Error('Extension context invalidated.'); };
+  const checks = [];
+  const original = globalThis.chrome;
+
+  try {
+    globalThis.chrome = { runtime: { id: 'abc' }, storage: { session: { set: async () => 'written' } } };
+    checks.push(['sees a loaded extension', extensionAlive() === true]);
+    checks.push(['passes a successful call through',
+      await guard(() => chrome.storage.session.set()) === 'written']);
+    checks.push(['passes a successful sync call through', guardSync(() => 42) === 42]);
+
+    globalThis.chrome = { runtime: {}, storage: { session: { set: invalidated } } };
+    checks.push(['sees an unloaded extension', extensionAlive() === false]);
+    checks.push(['swallows the synchronous throw',
+      await guard(() => chrome.storage.session.set()) === undefined]);
+    checks.push(['returns the fallback instead', await guard(invalidated, 'fb') === 'fb']);
+    checks.push(['swallows it for sync calls too', guardSync(invalidated, null) === null]);
+
+    // The shape that caused the reported crash, kept as the thing not to do.
+    let threw = false;
+    try { chrome.storage.session.set({}).catch(() => {}); } catch { threw = true; }
+    checks.push(['confirms a bare .catch() cannot catch it', threw === true]);
+
+    globalThis.chrome = { runtime: { id: 'abc' },
+      storage: { session: { set: async () => { throw new Error('closed'); } } } };
+    checks.push(['catches a call that fails in flight',
+      await guard(() => chrome.storage.session.set()) === undefined]);
+
+    globalThis.chrome = undefined;
+    checks.push(['copes with no chrome object at all', extensionAlive() === false]);
+    checks.push(['guards a call with no chrome object',
+      await guard(() => chrome.anything()) === undefined]);
+  } finally {
+    globalThis.chrome = original;
+  }
+
+  return checks;
+}
+
 async function main() {
   if (!existsSync(DIST)) throw new Error('dist/ not found. Run `npm run build` first.');
   if (!existsSync(CHROME)) throw new Error(`Chrome not found at ${CHROME}. Set CHROME_PATH.`);
 
   await mkdir(SHOTS, { recursive: true });
 
+  let failures = 0;
+
+  // Runs before Chrome starts: it needs no browser, and a failure here is
+  // worth knowing about before spending a minute on the browser passes.
+  console.log('orphaned-context');
+  for (const [label, ok] of await checkOrphanedContext()) {
+    if (!ok) failures++;
+    console.log(`  ${ok ? '✓' : '✗'} ${label}`);
+  }
+  console.log();
+
   const { server, port } = await startFixtureServer();
   const { child, stderr } = await launchChrome();
-
-  let failures = 0;
 
   try {
     const client = Devtools.connect(child);

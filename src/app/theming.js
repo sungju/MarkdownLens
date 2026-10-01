@@ -8,14 +8,20 @@
 
 import { FONT_STACKS, resolveTheme, resolveCodeTheme } from '../common/themes.js';
 import { CODE_THEMES_BY_ID } from '../generated/hljs-themes.js';
+import { guardSync } from '../common/runtime.js';
 
 const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 function asset(path) {
-  return chrome.runtime.getURL(path);
+  return guardSync(() => chrome.runtime.getURL(path), null);
 }
 
 function ensureLink(root, id, href) {
+  // A null href means the extension has been unloaded, so its chrome-extension://
+  // URLs are dead anyway. Stylesheets already in the document keep working, and
+  // leaving the link untouched preserves the look rather than blanking the page.
+  if (href === null) return root.querySelector(`link#${id}`);
+
   let link = root.querySelector(`link#${id}`);
   if (!link) {
     link = document.createElement('link');
