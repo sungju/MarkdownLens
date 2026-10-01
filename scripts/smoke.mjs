@@ -529,6 +529,7 @@ const PAGES = [
       preview: document.querySelectorAll('#preview .mdl-code-block').length,
       previewHighlighted: document.querySelectorAll('#preview .hljs-keyword').length,
       support: [...document.querySelectorAll('a')].some((a) => a.href.startsWith('https://baramsoft.com/support')),
+      privacy: [...document.querySelectorAll('a')].some((a) => a.href === 'https://baramsoft.com/privacy-markdownlens/'),
     }),
     expect: (r) => [
       ['renders the settings cards', r.cards >= 6],
@@ -541,6 +542,9 @@ const PAGES = [
       ['renders the live preview', r.preview >= 1],
       ['highlights inside the preview', r.previewHighlighted >= 1],
       ['links to support', r.support],
+      // The store holds the listing to its privacy policy URL, so the page it
+      // points at has to stay reachable from inside the extension too.
+      ['links to the privacy policy', r.privacy],
     ],
   },
   {
@@ -573,6 +577,7 @@ const PAGES = [
       fileState: document.getElementById('file-state')?.textContent || '',
       theme: document.documentElement.dataset.mdlTheme || '',
       support: [...document.querySelectorAll('a')].some((a) => a.href.startsWith('https://baramsoft.com/support')),
+      privacy: [...document.querySelectorAll('a')].some((a) => a.href === 'https://baramsoft.com/privacy-markdownlens/'),
     }),
     expect: (r) => [
       ['explains the first-run steps', r.steps >= 3],
@@ -581,6 +586,9 @@ const PAGES = [
       ['reports the file-access state', r.fileState.length > 0 && !r.fileState.includes('Checking')],
       ['themes itself like the viewer', !!r.theme],
       ['links to support', r.support],
+      // The store holds the listing to its privacy policy URL, so the page it
+      // points at has to stay reachable from inside the extension too.
+      ['links to the privacy policy', r.privacy],
     ],
   },
   {

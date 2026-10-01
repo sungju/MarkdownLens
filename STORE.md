@@ -10,8 +10,7 @@ Copy for the developer dashboard. Not shipped in the package.
 - **Price:** Free, no in-app purchases
 - **Website:** https://baramsoft.com
 - **Support URL:** https://baramsoft.com/support/
-- **Privacy policy URL:** https://baramsoft.com/support/ (link through to the
-  published copy of `PRIVACY.md`)
+- **Privacy policy URL:** https://baramsoft.com/privacy-markdownlens/
 
 ## Short description (132 characters max)
 
@@ -146,8 +145,9 @@ excludes nobody.
 
 ### Dashboard fields that live outside this repo
 
-- **Privacy policy URL** — the dashboard requires one even though the
-  extension collects nothing. Publish `PRIVACY.md` somewhere under
-  <https://baramsoft.com/support/> and paste that URL in.
+- **Privacy policy URL** — <https://baramsoft.com/privacy-markdownlens/>.
+  The dashboard requires one even though the extension collects nothing.
+  That page is the published copy of `PRIVACY.md`; when one changes, change
+  the other, because the store holds you to whichever it can read.
 - **Support URL** — <https://baramsoft.com/support/>.
 - **Category** — Developer Tools.
