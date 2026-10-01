@@ -1,0 +1,9 @@
+node_modules/
+dist/
+releases/
+src/generated/
+test/screenshots/
+.smoke-profile/
+.omc/
+.DS_Store
+*.log

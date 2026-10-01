@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Markdown Lens — Welcome</title>
+  <link rel="stylesheet" href="assets/themes.css">
+  <link rel="stylesheet" href="assets/pages.css">
+</head>
+<body class="page page-welcome">
+  <main class="welcome">
+    <img class="welcome-logo" src="icons/icon-128.png" alt="" width="72" height="72">
+    <h1>Markdown Lens is installed</h1>
+    <p class="welcome-lead">
+      Open any <code>.md</code> file in Chrome and it will be rendered with the theme,
+      typography and code colours you choose. Everything runs locally.
+    </p>
+
+    <ol class="steps">
+      <li>
+        <h2>Let Chrome open local files</h2>
+        <p>
+          Chrome blocks extensions from touching <code>file://</code> URLs until you say
+          otherwise. Turn on <strong>Allow access to file URLs</strong> on the extension's
+          details page.
+        </p>
+        <p class="step-state" id="file-state">Checking…</p>
+        <button class="btn btn-primary" type="button" id="open-details">Open the details page</button>
+      </li>
+      <li>
+        <h2>Pick your themes</h2>
+        <p>
+          Twenty document themes, every highlight.js code theme, and a live preview so you can
+          see each one before you commit.
+        </p>
+        <button class="btn" type="button" id="open-settings">Open settings</button>
+      </li>
+      <li>
+        <h2>Try it</h2>
+        <p>Drag a Markdown file into Chrome, or open the sample below.</p>
+        <button class="btn" type="button" id="open-sample">Open a sample document</button>
+      </li>
+    </ol>
+
+    <div class="shortcuts">
+      <h2>Keyboard shortcuts</h2>
+      <ul>
+        <li><kbd>o</kbd> outline</li>
+        <li><kbd>r</kbd> raw source</li>
+        <li><kbd>d</kbd> dark / light</li>
+        <li><kbd>g</kbd> / <kbd>G</kbd> top / bottom</li>
+        <li><kbd>Shift</kbd>+<kbd>P</kbd> print</li>
+      </ul>
+    </div>
+
+    <p class="welcome-foot">
+      Free software from <a href="https://baramsoft.com" target="_blank" rel="noopener noreferrer">Baram Soft</a> ·
+      <a href="https://baramsoft.com/support/" target="_blank" rel="noopener noreferrer">Support</a>
+    </p>
+  </main>
+
+  <script type="module" src="pages/welcome.js"></script>
+</body>
+</html>

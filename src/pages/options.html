@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Markdown Lens — Settings</title>
+  <link rel="stylesheet" href="assets/themes.css">
+  <link rel="stylesheet" href="assets/viewer.css">
+  <link rel="stylesheet" href="assets/pages.css">
+</head>
+<body class="page page-options">
+  <header class="page-header">
+    <div class="page-header-inner">
+      <img class="page-logo" src="icons/icon-48.png" alt="" width="32" height="32">
+      <div class="page-headings">
+        <h1>Markdown Lens</h1>
+        <p class="page-sub">Settings · <span id="version"></span></p>
+      </div>
+      <div class="page-header-actions">
+        <a class="btn btn-quiet" href="https://baramsoft.com/support/" target="_blank" rel="noopener noreferrer">Support</a>
+        <button class="btn btn-quiet" type="button" id="reset">Reset all</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-main">
+    <div class="settings">
+
+      <section class="card">
+        <h2>Theme</h2>
+
+        <div class="field">
+          <label for="theme-mode">Document theme</label>
+          <select id="theme-mode" data-setting="theme"></select>
+          <p class="hint">“Match system” follows your OS light/dark setting using the pair below.</p>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="theme-light">Light pair</label>
+            <select id="theme-light" data-setting="themeLight"></select>
+          </div>
+          <div class="field">
+            <label for="theme-dark">Dark pair</label>
+            <select id="theme-dark" data-setting="themeDark"></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="code-theme">Code block theme</label>
+          <select id="code-theme" data-setting="codeTheme"></select>
+          <p class="hint"><span id="code-theme-count">0</span> highlight.js themes are bundled — nothing is fetched from the network.</p>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="code-theme-light">Code light pair</label>
+            <select id="code-theme-light" data-setting="codeThemeLight"></select>
+          </div>
+          <div class="field">
+            <label for="code-theme-dark">Code dark pair</label>
+            <select id="code-theme-dark" data-setting="codeThemeDark"></select>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Typography</h2>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="font">Body font</label>
+            <select id="font" data-setting="font"></select>
+          </div>
+          <div class="field">
+            <label for="code-font">Code font</label>
+            <select id="code-font" data-setting="codeFont"></select>
+            <p class="hint">Falls back to your system monospace font when the family is not installed.</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="font-size">Text size <output data-output="fontSize" data-suffix=" px"></output></label>
+          <input id="font-size" type="range" min="12" max="24" step="1" data-setting="fontSize">
+        </div>
+
+        <div class="field">
+          <label for="line-height">Line height <output data-output="lineHeight"></output></label>
+          <input id="line-height" type="range" min="1.3" max="2.2" step="0.05" data-setting="lineHeight">
+        </div>
+
+        <div class="field">
+          <label for="content-width">Content width <output data-output="contentWidth" data-suffix=" px"></output></label>
+          <input id="content-width" type="range" min="560" max="1400" step="20" data-setting="contentWidth">
+        </div>
+
+        <div class="field">
+          <label for="para-spacing">Paragraph spacing <output data-output="paragraphSpacing"></output></label>
+          <input id="para-spacing" type="range" min="0.6" max="2" step="0.1" data-setting="paragraphSpacing">
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Layout</h2>
+        <label class="switch"><input type="checkbox" data-setting="toc"><span>Show the document outline</span></label>
+        <div class="field">
+          <label for="toc-position">Outline position</label>
+          <select id="toc-position" data-setting="tocPosition">
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+          </select>
+        </div>
+        <label class="switch"><input type="checkbox" data-setting="showToolbar"><span>Show the toolbar</span></label>
+        <label class="switch"><input type="checkbox" data-setting="showProgress"><span>Show the reading progress bar</span></label>
+        <label class="switch"><input type="checkbox" data-setting="showFooter"><span>Show the footer</span></label>
+      </section>
+
+      <section class="card">
+        <h2>Code blocks</h2>
+        <label class="switch"><input type="checkbox" data-setting="copyButtons"><span>Copy button on hover</span></label>
+        <label class="switch"><input type="checkbox" data-setting="lineNumbers"><span>Line numbers</span></label>
+        <label class="switch"><input type="checkbox" data-setting="wrapCode"><span>Wrap long lines <em>(hides line numbers)</em></span></label>
+      </section>
+
+      <section class="card">
+        <h2>Markdown</h2>
+        <label class="switch"><input type="checkbox" data-setting="taskLists"><span>Task lists <code>- [x]</code></span></label>
+        <label class="switch"><input type="checkbox" data-setting="footnotes"><span>Footnotes</span></label>
+        <label class="switch"><input type="checkbox" data-setting="emoji"><span>Emoji shortcodes <code>:tada:</code></span></label>
+        <label class="switch"><input type="checkbox" data-setting="math"><span>Math with KaTeX <code>$x^2$</code></span></label>
+        <label class="switch"><input type="checkbox" data-setting="mermaid"><span>Mermaid diagrams</span></label>
+        <label class="switch"><input type="checkbox" data-setting="anchors"><span>Clickable heading permalinks</span></label>
+        <label class="switch"><input type="checkbox" data-setting="linkify"><span>Turn bare URLs into links</span></label>
+        <label class="switch"><input type="checkbox" data-setting="typographer"><span>Smart quotes and dashes</span></label>
+        <label class="switch"><input type="checkbox" data-setting="breaks"><span>Treat single newlines as line breaks</span></label>
+        <label class="switch"><input type="checkbox" data-setting="attrs"><span>Inline attributes <code>{.class #id}</code></span></label>
+
+        <div class="field">
+          <label for="front-matter">Front matter</label>
+          <select id="front-matter" data-setting="frontMatter">
+            <option value="table">Show as a table</option>
+            <option value="raw">Show the raw block</option>
+            <option value="hide">Hide it</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Behaviour</h2>
+        <label class="switch"><input type="checkbox" data-setting="enabled"><span>Render Markdown files <em>(master switch)</em></span></label>
+        <label class="switch"><input type="checkbox" data-setting="autoReload"><span>Reload automatically when the file changes</span></label>
+        <div class="field">
+          <label for="reload-interval">Check every <output data-output="autoReloadInterval" data-suffix=" ms"></output></label>
+          <input id="reload-interval" type="range" min="500" max="5000" step="100" data-setting="autoReloadInterval">
+          <p class="hint">Chrome blocks this for <code>file://</code> documents; the toolbar reload button still works there.</p>
+        </div>
+        <label class="switch"><input type="checkbox" data-setting="rememberScroll"><span>Remember my scroll position</span></label>
+        <label class="switch"><input type="checkbox" data-setting="openLinksInNewTab"><span>Open external links in a new tab</span></label>
+      </section>
+
+      <section class="card">
+        <h2>Permissions</h2>
+        <p class="hint">
+          Markdown Lens works out of the box on <code>file://</code> documents and on URLs that end
+          in a Markdown extension. The options below ask for wider access, and nothing is read or
+          sent anywhere either way.
+        </p>
+
+        <div class="permission" id="file-access">
+          <div>
+            <strong>Local files</strong>
+            <p class="hint">Chrome requires you to switch this on yourself, on the extension's details page.</p>
+          </div>
+          <button class="btn" type="button" id="open-file-access">Open details page</button>
+        </div>
+
+        <div class="permission">
+          <div>
+            <strong>Scan every page for Markdown</strong>
+            <p class="hint">Renders Markdown served without a recognisable file extension, and fixes servers that send <code>text/markdown</code> (which Chrome would otherwise download).</p>
+          </div>
+          <button class="btn" type="button" id="grant-scan">Grant access</button>
+        </div>
+        <label class="switch"><input type="checkbox" data-setting="scanAllPages"><span>Scanning is active</span></label>
+        <p class="hint" id="scan-status"></p>
+      </section>
+
+      <section class="card">
+        <h2>Custom CSS</h2>
+        <p class="hint">Applied last, so it overrides the theme. Target <code>.mdl-content</code> for the document body.</p>
+        <textarea id="custom-css" class="code-area" rows="8" spellcheck="false" placeholder=".mdl-content h1 { letter-spacing: -0.02em; }" data-setting="customCss"></textarea>
+      </section>
+
+      <section class="card">
+        <h2>About</h2>
+        <p class="hint">
+          Markdown Lens is free software from <a href="https://baramsoft.com" target="_blank" rel="noopener noreferrer">Baram Soft</a>.
+          It has no accounts, no analytics and no network calls — every theme, font stack and
+          library is bundled with the extension.
+        </p>
+        <p class="hint">
+          Built on markdown-it, highlight.js, KaTeX, Mermaid and DOMPurify.
+          Questions and bug reports: <a href="https://baramsoft.com/support/" target="_blank" rel="noopener noreferrer">baramsoft.com/support</a>.
+        </p>
+      </section>
+    </div>
+
+    <aside class="preview">
+      <div class="preview-head">
+        <span>Live preview</span>
+        <button class="btn btn-quiet" type="button" id="preview-sample">Switch sample</button>
+      </div>
+      <div class="preview-frame">
+        <article class="mdl-content markdown-body" id="preview"></article>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module" src="pages/options.js"></script>
+</body>
+</html>

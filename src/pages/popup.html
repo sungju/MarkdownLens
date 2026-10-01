@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Markdown Lens</title>
+  <link rel="stylesheet" href="assets/themes.css">
+  <link rel="stylesheet" href="assets/pages.css">
+</head>
+<body class="page page-popup">
+  <header class="popup-head">
+    <img src="icons/icon-32.png" alt="" width="20" height="20">
+    <strong>Markdown Lens</strong>
+    <span class="popup-status" id="status">Checking…</span>
+  </header>
+
+  <div class="popup-body">
+    <div class="field">
+      <label for="theme">Theme</label>
+      <select id="theme" data-setting="theme"></select>
+    </div>
+
+    <div class="field">
+      <label for="code-theme">Code theme</label>
+      <select id="code-theme" data-setting="codeTheme"></select>
+    </div>
+
+    <div class="popup-actions">
+      <button class="btn" type="button" id="toggle-raw">Source</button>
+      <button class="btn" type="button" id="reload">Reload</button>
+      <button class="btn" type="button" id="print">Print</button>
+    </div>
+
+    <label class="switch"><input type="checkbox" data-setting="enabled"><span>Render Markdown files</span></label>
+    <label class="switch"><input type="checkbox" data-setting="toc"><span>Show outline</span></label>
+    <label class="switch"><input type="checkbox" data-setting="wrapCode"><span>Wrap code lines</span></label>
+  </div>
+
+  <footer class="popup-foot">
+    <button class="btn btn-primary" type="button" id="settings">All settings</button>
+    <a class="btn btn-quiet" href="https://baramsoft.com/support/" target="_blank" rel="noopener noreferrer">Support</a>
+  </footer>
+
+  <script type="module" src="pages/popup.js"></script>
+</body>
+</html>

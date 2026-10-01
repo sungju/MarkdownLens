@@ -1,0 +1,78 @@
+{
+  "manifest_version": 3,
+  "name": "Markdown Lens",
+  "version": "1.0.0",
+  "description": "Render Markdown files beautifully in Chrome. 20 document themes, every highlight.js code theme, math, diagrams, and a live outline.",
+  "homepage_url": "https://baramsoft.com",
+  "minimum_chrome_version": "116",
+  "author": "Baram Soft",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Markdown Lens",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "scripting"
+  ],
+  "optional_permissions": [
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "optional_host_permissions": [
+    "*://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "file:///*",
+        "*://*/*.md",
+        "*://*/*.md?*",
+        "*://*/*.markdown",
+        "*://*/*.markdown?*",
+        "*://*/*.mdown",
+        "*://*/*.mkd",
+        "*://*/*.mkdn",
+        "*://*/*.mdwn",
+        "*://*/*.mdtxt",
+        "*://*/*.mdtext",
+        "*://*/*.rmd",
+        "*://*/*.qmd"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "app/*",
+        "chunks/*",
+        "hljs/*",
+        "katex/*",
+        "assets/*",
+        "icons/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

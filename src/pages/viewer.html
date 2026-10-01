@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Markdown Lens</title>
+  <link rel="stylesheet" href="assets/themes.css">
+  <link rel="stylesheet" href="assets/pages.css">
+</head>
+<body class="page page-dropzone">
+  <main class="dropzone" id="dropzone">
+    <img src="icons/icon-128.png" alt="" width="64" height="64">
+    <h1>Open a Markdown file</h1>
+    <p>Drop a <code>.md</code> file anywhere on this page, or choose one below. The file is read in
+       your browser and never uploaded.</p>
+    <p class="dropzone-actions">
+      <button class="btn btn-primary" type="button" id="choose">Choose a file…</button>
+      <button class="btn" type="button" id="sample">Open the sample</button>
+    </p>
+    <input id="file" type="file" accept=".md,.markdown,.mdown,.mkd,.mkdn,.mdwn,.rmd,.qmd,.txt,text/markdown,text/plain" hidden>
+    <p class="dropzone-hint">
+      Tip: enable <strong>Allow access to file URLs</strong> on the extension's details page and
+      Markdown Lens will render <code>file://</code> documents directly.
+    </p>
+  </main>
+
+  <script type="module" src="pages/viewer.js"></script>
+</body>
+</html>
