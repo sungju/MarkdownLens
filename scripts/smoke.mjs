@@ -862,6 +862,72 @@ async function checkPopupBridge(client, urls) {
  * unloading the extension mid-run would take the harness down with it. The
  * failure is pure logic, so a fake `chrome` reproduces it exactly.
  */
+/**
+ * Store-readiness checks, run against the sources rather than the browser.
+ *
+ * Everything here is something the Chrome Web Store enforces at upload time or
+ * that silently degrades the listing. Finding out at upload is a slow way to
+ * learn it, and some of these facts live in two files that drift apart quietly.
+ */
+function checkStoreReadiness() {
+  const manifest = JSON.parse(readFileSync(path.join(ROOT, 'src', 'manifest.json'), 'utf8'));
+  const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const checks = [];
+
+  checks.push(['manifest and package versions agree', manifest.version === pkg.version]);
+  checks.push([`name fits the 75-char limit (${manifest.name.length})`, manifest.name.length <= 75]);
+  checks.push([`description fits the 132-char limit (${manifest.description.length})`,
+    manifest.description.length > 0 && manifest.description.length <= 132]);
+  checks.push(['points at the company site', manifest.homepage_url === 'https://baramsoft.com']);
+
+  // An unknown top-level key is not an upload error — Chrome's own packer
+  // ignores them silently — so nothing but a whitelist will catch a typo or a
+  // key invented from memory.
+  const KNOWN = new Set(['manifest_version', 'name', 'version', 'description', 'homepage_url',
+    'minimum_chrome_version', 'icons', 'action', 'options_ui', 'background', 'permissions',
+    'optional_permissions', 'host_permissions', 'optional_host_permissions', 'content_scripts',
+    'web_accessible_resources', 'declarative_net_request', 'default_locale', 'commands']);
+  const unknown = Object.keys(manifest).filter((key) => !KNOWN.has(key));
+  checks.push([`declares no unrecognised manifest keys${unknown.length ? `: ${unknown}` : ''}`,
+    unknown.length === 0]);
+
+  // The content-type rule needs declarativeNetRequest response-header
+  // conditions, which landed in Chrome 128. Advertising it to anyone older
+  // would promise a feature that cannot work.
+  const DNR_RESPONSE_HEADERS_SINCE = 128;
+  const min = Number(manifest.minimum_chrome_version);
+  checks.push([`minimum_chrome_version covers response-header rules (${min})`,
+    min >= DNR_RESPONSE_HEADERS_SINCE]);
+
+  const build = readFileSync(path.join(ROOT, 'scripts', 'build.mjs'), 'utf8');
+  const target = build.match(/target:\s*\['chrome(\d+)'\]/)?.[1];
+  checks.push([`build target matches the manifest minimum (chrome${target})`,
+    Number(target) === min]);
+
+  // Resolved against dist/ rather than the sources: these paths are what the
+  // packed extension will actually resolve, so a copy step that missed a file
+  // shows up here instead of in the store's review queue.
+  for (const [size, file] of Object.entries(manifest.icons)) {
+    const dim = pngSize(path.join(DIST, file));
+    checks.push([`icon ${size} is ${size}×${size}`,
+      dim !== null && dim.width === Number(size) && dim.height === Number(size)]);
+  }
+
+  const promo = pngSize(path.join(ROOT, 'store', 'promo-440x280.png'));
+  checks.push(['promo tile is exactly 440×280',
+    promo !== null && promo.width === 440 && promo.height === 280]);
+
+  return checks;
+}
+
+/** Read a PNG's dimensions out of its IHDR chunk, or null if it is not there. */
+function pngSize(file) {
+  if (!existsSync(file)) return null;
+  const buf = readFileSync(file);
+  if (buf.length < 24 || buf.readUInt32BE(0) !== 0x89504e47) return null;
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
+
 async function checkOrphanedContext() {
   const { extensionAlive, guard, guardSync } =
     await import(new URL('../src/common/runtime.js', import.meta.url));
@@ -913,8 +979,15 @@ async function main() {
 
   let failures = 0;
 
-  // Runs before Chrome starts: it needs no browser, and a failure here is
-  // worth knowing about before spending a minute on the browser passes.
+  // These two need no browser, and a failure in either is worth knowing about
+  // before spending a minute on the browser passes.
+  console.log('store-readiness');
+  for (const [label, ok] of checkStoreReadiness()) {
+    if (!ok) failures++;
+    console.log(`  ${ok ? '✓' : '✗'} ${label}`);
+  }
+  console.log();
+
   console.log('orphaned-context');
   for (const [label, ok] of await checkOrphanedContext()) {
     if (!ok) failures++;

@@ -8,6 +8,7 @@
   "homepage": "https://baramsoft.com",
   "scripts": {
     "icons": "node scripts/make-icons.mjs",
+    "promo": "node scripts/make-promo.mjs",
     "build": "node scripts/build.mjs",
     "watch": "node scripts/build.mjs --watch",
     "test": "node scripts/smoke.mjs",

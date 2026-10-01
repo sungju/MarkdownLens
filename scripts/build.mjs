@@ -186,7 +186,10 @@ async function verifyThemePairings(themes) {
 
 const shared = {
   bundle: true,
-  target: ['chrome116'],
+  // Keep this in step with minimum_chrome_version in src/manifest.json. A lower
+  // target would still run, but the two numbers answering differently about
+  // which Chrome we support is how one of them ends up wrong.
+  target: ['chrome128'],
   minify: RELEASE,
   sourcemap: RELEASE ? false : 'linked',
   legalComments: 'none',

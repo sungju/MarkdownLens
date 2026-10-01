@@ -4,8 +4,7 @@
   "version": "1.0.0",
   "description": "Render Markdown files beautifully in Chrome. 20 document themes, every highlight.js code theme, math, diagrams, and a live outline.",
   "homepage_url": "https://baramsoft.com",
-  "minimum_chrome_version": "116",
-  "author": "Baram Soft",
+  "minimum_chrome_version": "128",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",

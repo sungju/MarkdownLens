@@ -117,10 +117,25 @@ extensions)**
 | Screenshot 3 | 1280×800 | Math and the Mermaid diagram — `content-script-math.png`. |
 | Screenshot 4 | 1280×800 | Settings with the live preview — `options.png`. |
 | Screenshot 5 | 1280×800 | The code-theme picker open — `code-theme-picker.png`. |
-| Small promo tile | 440×280 | Optional, but needed to be considered for featuring. |
+| Small promo tile | 440×280 | `store/promo-440x280.png`. Optional, but needed to be considered for featuring. |
 
 Run `npm test` to regenerate the screenshots. They are captured at 1280×800
-and can be uploaded as they are.
+and can be uploaded as they are. `test/screenshots/` is not committed, so the
+test run is the only way to get them; the promo tile is committed and only
+needs `npm run promo` if the branding changes.
+
+Note that `popup.png` is 320×520 and is not a store screenshot — the store
+rejects anything that is not 1280×800 or 640×400.
+
+## Browser support
+
+`minimum_chrome_version` is **128**. The binding constraint is the
+content-type rule: rewriting `text/markdown` responses relies on
+declarativeNetRequest *response header* conditions, which Chrome only
+supports from 128. On an older browser that feature would fail silently
+while the listing advertised it, so the manifest excludes those versions
+rather than under-deliver. Chrome is well past 154, so in practice this
+excludes nobody.
 
 ## Release checklist
 
@@ -128,3 +143,11 @@ and can be uploaded as they are.
 2. `npm test` — every check green.
 3. `npm run release` — produces `releases/markdown-lens-<version>.zip`.
 4. Upload, update the listing copy above if features changed, submit.
+
+### Dashboard fields that live outside this repo
+
+- **Privacy policy URL** — the dashboard requires one even though the
+  extension collects nothing. Publish `PRIVACY.md` somewhere under
+  <https://baramsoft.com/support/> and paste that URL in.
+- **Support URL** — <https://baramsoft.com/support/>.
+- **Category** — Developer Tools.
