@@ -11,6 +11,7 @@
     "build": "node scripts/build.mjs",
     "watch": "node scripts/build.mjs --watch",
     "test": "node scripts/smoke.mjs",
+    "serve": "node scripts/serve-test.mjs",
     "id": "node scripts/extension-id.mjs",
     "release": "node scripts/build.mjs --release && node scripts/package.mjs",
     "clean": "rm -rf dist"
