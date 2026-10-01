@@ -15,6 +15,7 @@
     "serve": "node scripts/serve-test.mjs",
     "id": "node scripts/extension-id.mjs",
     "release": "node scripts/build.mjs --release && node scripts/package.mjs",
+    "store-kit": "node scripts/store-kit.mjs",
     "clean": "rm -rf dist"
   },
   "dependencies": {

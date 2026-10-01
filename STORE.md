@@ -14,10 +14,14 @@ Copy for the developer dashboard. Not shipped in the package.
 
 ## Short description (132 characters max)
 
-> Read Markdown beautifully in Chrome. 20 document themes, every highlight.js
-> code theme, math, diagrams and a live outline.
+The store shows the manifest's `description` as the summary, so this must
+match `src/manifest.json` word for word; `npm run store-kit` refuses to build
+if it does not.
 
-(123 characters.)
+> Render Markdown files beautifully in Chrome. 20 document themes, every
+> highlight.js code theme, math, diagrams, and a live outline.
+
+(131 characters.)
 
 ## Detailed description
 
@@ -141,7 +145,10 @@ excludes nobody.
 1. Bump `version` in both `package.json` and `src/manifest.json`.
 2. `npm test` — every check green.
 3. `npm run release` — produces `releases/markdown-lens-<version>.zip`.
-4. Upload, update the listing copy above if features changed, submit.
+4. Update the listing copy above if features changed.
+5. `npm run store-kit` — gathers the zip, screenshots, icon, promo tile and
+   paste-ready text into `releases/store-kit-<version>/`, with an `UPLOAD.md`
+   that maps each file to its dashboard field. Upload from there, submit.
 
 ### Dashboard fields that live outside this repo
 
