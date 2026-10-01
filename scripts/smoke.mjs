@@ -230,9 +230,13 @@ const PAGES = [
         return text.trim();
       })(),
       // What Cmd+A → Cmd+C actually puts on the clipboard. Everything the
-      // viewer adds around the document — file name, outline, button labels,
-      // footer — has to stay out of it, so selecting the whole page must
+      // viewer adds around the document — outline, button labels — has to
+      // stay out of it, so selecting the whole page must
       // yield exactly what selecting the document alone yields.
+      chrome: {
+        fileName: !!document.querySelector('.mdl-toolbar')?.textContent.includes('fixture.md'),
+        footer: !!document.querySelector('.mdl-page > footer, .mdl-footer'),
+      },
       selection: (() => {
         const take = (node) => {
           if (!node) return '';
@@ -248,7 +252,7 @@ const PAGES = [
 
         const whole = take(document.body);
         const content = take(document.querySelector('.mdl-page'));
-        const furniture = ['.mdl-toolbar', '.mdl-toc', '.mdl-footer', '.mdl-to-top']
+        const furniture = ['.mdl-toolbar', '.mdl-toc', '.mdl-to-top']
           .filter((sel) => {
             const own = document.querySelector(sel)?.textContent.trim();
             return own && own.length > 2 && whole.includes(own);
@@ -258,7 +262,6 @@ const PAGES = [
           whole,
           content,
           furniture,
-          docTitle: document.querySelector('.mdl-doc-title')?.textContent || '',
           // A copied code block should be the code. The language caption and
           // the Copy button sit in the same wrapper and would otherwise be
           // pasted as two stray lines above it.
@@ -297,10 +300,10 @@ const PAGES = [
         r.selection.whole === r.selection.content],
       ['leaves the viewer\'s own furniture unselectable',
         r.selection.furniture.length === 0],
-      ['keeps the file name out of the selection',
-        r.selection.docTitle.length > 0 && !r.selection.whole.includes(r.selection.docTitle)],
-      ['keeps the footer links out of the selection',
-        !r.selection.whole.includes('Support')],
+      // The page is the document alone: no file name in the toolbar and no
+      // footer under the text.
+      ['shows no file name in the toolbar', !r.chrome.fileName],
+      ['shows no footer', !r.chrome.footer],
       ['copies code without its caption or Copy button',
         r.selection.codeBlock.length > 20
         && !r.selection.codeBlock.includes(r.selection.codeLang)
@@ -600,14 +603,14 @@ const PAGES = [
       codeBlocks: document.querySelectorAll('.mdl-code-block').length,
       picker: !!document.querySelector('input[type=file]'),
       outline: document.querySelectorAll('.mdl-toc nav a').length,
-      footer: !!document.querySelector('.mdl-footer a[href^="https://baramsoft.com"]'),
+      footer: !!document.querySelector('.mdl-page > footer, .mdl-footer'),
     }),
     expect: (r) => [
       ['boots the sample document', r.booted],
       ['renders code', r.codeBlocks >= 1],
       ['keeps the file picker attached', r.picker],
       ['builds the outline', r.outline >= 2],
-      ['shows the footer links', r.footer],
+      ['shows no footer', !r.footer],
     ],
   },
 ];

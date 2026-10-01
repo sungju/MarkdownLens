@@ -84,12 +84,18 @@ a new one, guard it. Bundled pages (options, popup, viewer) die with the
 extension and never hit this, so they do not need it.
 
 **The viewer's own UI is excluded from text selections.** Select All reaches
-the whole page, so without `user-select: none` on the toolbar, outline, footer,
+the whole page, so without `user-select: none` on the toolbar, outline,
 menus, progress bar and code-block captions, a reader copying an article also
-pastes the file name, the outline and every button label. The raw source view
+pastes the outline and every button label. The raw source view
 and the front matter table are deliberately left selectable — both are the
 document. The code-theme filter opts back in, since a field you cannot select
 text in is broken.
+
+**The rendered page carries nothing but the document.** No file name in the
+toolbar and no footer under the text: the browser tab already names the file,
+and a footer of company links on every document someone opens is the extension
+talking over their content. The Baram Soft and Support links live in Settings
+and the popup instead. The smoke suite fails if either comes back.
 
 **The privacy policy exists twice.** `PRIVACY.md` in the repo and
 <https://baramsoft.com/privacy-markdownlens/> published on the site. The store

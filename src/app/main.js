@@ -51,7 +51,6 @@ export async function boot(context) {
   installBaseStyles(document.head);
 
   state.shell = buildShell({
-    title: displayName(),
     actions: {
       toggleOutline: (force) => toggleOutline(force),
       toggleScheme: () => toggleScheme(),
@@ -139,7 +138,6 @@ function applyAll() {
   state.shell.root.classList.toggle('mdl-toc-right', state.settings.tocPosition === 'right');
   state.shell.setOutline(state.settings.toc && !state.settings.tocCollapsed);
   state.shell.setScheme(theme.scheme);
-  state.shell.setFooterVisible(state.settings.showFooter);
   state.shell.menus.themeMenu.sync(state.settings);
   state.shell.menus.codeMenu.sync(state.settings);
   document.documentElement.classList.toggle('mdl-toc-disabled', !state.settings.toc);
@@ -174,7 +172,6 @@ async function renderDocument({ keepScroll = false } = {}) {
   const heading = shell.article.querySelector('h1');
   const title = heading ? heading.textContent.replace(/^#/, '').trim() : displayName();
   document.title = `${title} — Markdown Lens`;
-  shell.setTitle(displayName());
 
   enhance(shell.article, settings);
 

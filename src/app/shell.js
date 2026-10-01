@@ -7,9 +7,6 @@ import { ICONS } from './icons.js';
 import { THEMES } from '../common/themes.js';
 import { CODE_THEMES } from '../generated/hljs-themes.js';
 
-const SUPPORT_URL = 'https://baramsoft.com/support/';
-const HOME_URL = 'https://baramsoft.com';
-
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -32,7 +29,7 @@ function iconButton(icon, label, { pressed = null } = {}) {
  * Build the whole shell into a blank document.
  * @returns a handle with element references and small helpers.
  */
-export function buildShell({ title, actions }) {
+export function buildShell({ actions }) {
   const root = el('div', 'mdl-root');
 
   /* ---- sidebar ---- */
@@ -52,9 +49,7 @@ export function buildShell({ title, actions }) {
   const toolbarRight = el('div', 'mdl-toolbar-group');
 
   const outlineBtn = iconButton('outline', 'Outline', { pressed: true });
-  const docTitle = el('span', 'mdl-doc-title', title);
-  docTitle.title = title;
-  toolbarLeft.append(outlineBtn, docTitle);
+  toolbarLeft.append(outlineBtn);
 
   const themeBtn = iconButton('palette', 'Theme');
   const codeBtn = iconButton('code', 'Code theme');
@@ -78,18 +73,7 @@ export function buildShell({ title, actions }) {
   const rawCode = el('code', 'hljs language-markdown');
   rawView.append(rawCode);
 
-  const footer = el('footer', 'mdl-footer');
-  const footerLink = el('a', 'mdl-footer-link', 'Markdown Lens');
-  footerLink.href = HOME_URL;
-  footerLink.target = '_blank';
-  footerLink.rel = 'noopener noreferrer';
-  const supportLink = el('a', 'mdl-footer-link', 'Support');
-  supportLink.href = SUPPORT_URL;
-  supportLink.target = '_blank';
-  supportLink.rel = 'noopener noreferrer';
-  footer.append(footerLink, el('span', 'mdl-footer-sep', '·'), supportLink);
-
-  page.append(meta, article, rawView, footer);
+  page.append(meta, article, rawView);
   main.append(toolbar, page);
 
   const progress = el('div', 'mdl-progress');
@@ -124,13 +108,9 @@ export function buildShell({ title, actions }) {
   }, { passive: true });
 
   return {
-    root, sidebar, tocNav, article, meta, rawView, rawCode, page, toolbar, footer,
+    root, sidebar, tocNav, article, meta, rawView, rawCode, page, toolbar,
     buttons: { outlineBtn, themeBtn, codeBtn, schemeBtn, rawBtn, reloadBtn, printBtn, settingsBtn },
     menus: { themeMenu, codeMenu },
-    setTitle(value) {
-      docTitle.textContent = value;
-      docTitle.title = value;
-    },
     setOutline(open) {
       root.classList.toggle('mdl-toc-open', open);
       outlineBtn.setAttribute('aria-pressed', String(open));
@@ -145,9 +125,6 @@ export function buildShell({ title, actions }) {
       schemeBtn.append(el('span', 'mdl-btn-label', label));
       schemeBtn.title = label;
       schemeBtn.setAttribute('aria-label', label);
-    },
-    setFooterVisible(visible) {
-      footer.hidden = !visible;
     },
   };
 }

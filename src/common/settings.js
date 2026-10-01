@@ -40,7 +40,6 @@ export const DEFAULTS = {
   tocCollapsed: false,
   showToolbar: true,
   showProgress: true,
-  showFooter: true,
 
   // Code blocks
   copyButtons: true,

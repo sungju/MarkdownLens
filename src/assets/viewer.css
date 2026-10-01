@@ -67,15 +67,13 @@ html.mdl-host :focus-visible {
 /*
  * Everything the viewer wraps around the document is furniture, not content.
  * Select All reaches the whole page, so without this a reader who copies an
- * article also pastes the file name, the outline, every button label and the
- * footer. Taking the furniture out of selections entirely means Cmd+A, a
- * triple-click or a drag past the edge of the text all yield the document and
- * nothing else. The raw source view and the front matter table are deliberately
+ * article also pastes the outline and every button label. Taking the furniture
+ * out of selections entirely means Cmd+A, a triple-click or a drag past the
+ * edge of the text all yield the document and nothing else. The raw source view and the front matter table are deliberately
  * absent here: both are the document, and both are worth copying.
  */
 .mdl-toolbar,
 .mdl-toc,
-.mdl-footer,
 .mdl-to-top,
 .mdl-progress,
 .mdl-menu,
@@ -115,16 +113,6 @@ html.mdl-host :focus-visible {
   align-items: center;
   gap: 2px;
   min-width: 0;
-}
-
-.mdl-doc-title {
-  margin-left: 6px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--mdl-fg-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .mdl-btn {
@@ -848,22 +836,6 @@ pre.mdl-code.has-gutter {
   overflow-y: hidden;
 }
 
-/* --------------------------------------------------------------- footer */
-
-.mdl-footer {
-  margin-top: 56px;
-  padding-top: 16px;
-  border-top: 1px solid var(--mdl-border);
-  display: flex;
-  gap: 8px;
-  font-size: 0.75rem;
-  color: var(--mdl-fg-faint);
-}
-
-.mdl-footer[hidden] { display: none; }
-.mdl-footer-link { color: var(--mdl-fg-faint); text-decoration: none; }
-.mdl-footer-link:hover { color: var(--mdl-accent); text-decoration: underline; }
-
 /* ---------------------------------------------------------------- print */
 
 @media print {
@@ -874,8 +846,7 @@ pre.mdl-code.has-gutter {
   .mdl-to-top,
   .mdl-menu,
   .mdl-code-bar,
-  .mdl-toast,
-  .mdl-footer { display: none !important; }
+  .mdl-toast { display: none !important; }
 
   .mdl-toc-open .mdl-main { margin-left: 0; }
   .mdl-page { max-width: none; padding: 0; }
