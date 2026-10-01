@@ -64,6 +64,33 @@ html.mdl-host :focus-visible {
   padding: 32px 28px 96px;
 }
 
+/*
+ * Everything the viewer wraps around the document is furniture, not content.
+ * Select All reaches the whole page, so without this a reader who copies an
+ * article also pastes the file name, the outline, every button label and the
+ * footer. Taking the furniture out of selections entirely means Cmd+A, a
+ * triple-click or a drag past the edge of the text all yield the document and
+ * nothing else. The raw source view and the front matter table are deliberately
+ * absent here: both are the document, and both are worth copying.
+ */
+.mdl-toolbar,
+.mdl-toc,
+.mdl-footer,
+.mdl-to-top,
+.mdl-progress,
+.mdl-menu,
+.mdl-toast,
+.mdl-btn-label,
+.mdl-code-bar {
+  user-select: none;
+}
+
+/* The code theme filter lives inside a menu that the rule above silences, and
+   a field you cannot select text in is a broken field. */
+.mdl-menu-input {
+  user-select: text;
+}
+
 /* -------------------------------------------------------------- toolbar */
 
 .mdl-toolbar {

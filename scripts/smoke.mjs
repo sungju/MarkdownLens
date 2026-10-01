@@ -229,6 +229,43 @@ const PAGES = [
         selection.removeAllRanges();
         return text.trim();
       })(),
+      // What Cmd+A → Cmd+C actually puts on the clipboard. Everything the
+      // viewer adds around the document — file name, outline, button labels,
+      // footer — has to stay out of it, so selecting the whole page must
+      // yield exactly what selecting the document alone yields.
+      selection: (() => {
+        const take = (node) => {
+          if (!node) return '';
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const selection = getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          const text = selection.toString();
+          selection.removeAllRanges();
+          return text.trim();
+        };
+
+        const whole = take(document.body);
+        const content = take(document.querySelector('.mdl-page'));
+        const furniture = ['.mdl-toolbar', '.mdl-toc', '.mdl-footer', '.mdl-to-top']
+          .filter((sel) => {
+            const own = document.querySelector(sel)?.textContent.trim();
+            return own && own.length > 2 && whole.includes(own);
+          });
+
+        return {
+          whole,
+          content,
+          furniture,
+          docTitle: document.querySelector('.mdl-doc-title')?.textContent || '',
+          // A copied code block should be the code. The language caption and
+          // the Copy button sit in the same wrapper and would otherwise be
+          // pasted as two stray lines above it.
+          codeBlock: take(document.querySelector('.mdl-code-block')),
+          codeLang: document.querySelector('.mdl-code-lang')?.textContent || '',
+        };
+      })(),
     }),
     expect: (r) => [
       ['renders the shell', r.booted],
@@ -255,6 +292,19 @@ const PAGES = [
       ['keeps inline HTML', r.details === 1],
       ['copies headings without the permalink marker',
         r.headingSelection.length > 0 && !r.headingSelection.startsWith('#')],
+      ['selects the whole document', r.selection.whole.length > 500],
+      ['selecting all copies the document and nothing else',
+        r.selection.whole === r.selection.content],
+      ['leaves the viewer\'s own furniture unselectable',
+        r.selection.furniture.length === 0],
+      ['keeps the file name out of the selection',
+        r.selection.docTitle.length > 0 && !r.selection.whole.includes(r.selection.docTitle)],
+      ['keeps the footer links out of the selection',
+        !r.selection.whole.includes('Support')],
+      ['copies code without its caption or Copy button',
+        r.selection.codeBlock.length > 20
+        && !r.selection.codeBlock.includes(r.selection.codeLang)
+        && !r.selection.codeBlock.includes('Copy')],
     ],
   },
   {
