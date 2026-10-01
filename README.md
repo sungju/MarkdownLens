@@ -93,7 +93,14 @@ npm run build          # development build with source maps → dist/
 npm run watch          # rebuild on change
 npm test               # headless Chrome end-to-end smoke test
 npm run release        # minified build + releases/markdown-lens-<version>.zip
+npm run serve          # local server for the manual checks the harness cannot do
+npm run icons          # redraw the PNG icons
+npm run promo          # redraw the 440×280 store promo tile
+npm run id             # print the extension id Chrome derives from dist/
 ```
+
+See [AGENTS.md](AGENTS.md) for the reasoning behind the project's less obvious
+decisions, and the conventions to follow when changing them.
 
 `npm test` installs `dist/` into a throwaway Chrome profile, serves
 `test/fixture.md` over localhost, and checks the rendered DOM of the
