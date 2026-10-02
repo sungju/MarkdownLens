@@ -6,7 +6,7 @@
  * kept in chrome.storage.local.
  */
 
-import { guard, guardSync } from './runtime.js';
+import { extensionAlive, guard, guardSync } from './runtime.js';
 
 export const LOCAL_KEYS = ['customCss'];
 
@@ -102,21 +102,83 @@ export async function getSettings() {
   return { ...cache };
 }
 
+/*
+ * Synced storage accepts 120 writes a minute and 1800 an hour, and a slider
+ * fires an input event for every step it passes. Written straight through, a
+ * few drags in Settings used up the allowance, and every change after that
+ * was rejected — silently, since the page had already shown it as saved. So
+ * synced writes are spaced at least SYNC_SPACING apart, with whatever arrives
+ * in between merged into the next one. The first change after a quiet spell
+ * still goes out at once, which keeps toolbar buttons instant. A write the
+ * store refuses anyway is kept and tried again until it lands.
+ */
+const SYNC_SPACING = 500;
+const SYNC_RETRY = 5000;
+let syncPending = null;
+let syncTimer = null;
+let syncLastWrite = 0;
+let syncWaiters = [];
+
+function scheduleSync(delay) {
+  if (syncTimer) return;
+  syncTimer = setTimeout(flushSync, Math.max(0, delay));
+}
+
+async function flushSync() {
+  syncTimer = null;
+  const batch = syncPending;
+  const waiters = syncWaiters;
+  syncPending = null;
+  syncWaiters = [];
+  syncLastWrite = Date.now();
+  if (!batch) return;
+
+  try {
+    if (extensionAlive()) await chrome.storage.sync.set(batch);
+  } catch (error) {
+    if (extensionAlive()) {
+      console.warn('[Markdown Lens] settings not saved yet, retrying:', error?.message || error);
+      // Newer values for the same keys win over the batch being retried.
+      syncPending = { ...batch, ...syncPending };
+      syncWaiters = [...waiters, ...syncWaiters];
+      scheduleSync(SYNC_RETRY);
+      return;
+    }
+  }
+  for (const resolve of waiters) resolve();
+  if (syncPending) scheduleSync(syncLastWrite + SYNC_SPACING - Date.now());
+}
+
+function writeSync(patch) {
+  syncPending = { ...syncPending, ...patch };
+  const done = new Promise((resolve) => syncWaiters.push(resolve));
+  scheduleSync(syncLastWrite + SYNC_SPACING - Date.now());
+  return done;
+}
+
 /** Merge a partial update into storage. */
 export async function setSettings(patch) {
+  // The cache is updated before the write, and whether or not it lands: a
+  // synced write can be held back for a while, and a viewer whose extension
+  // has been reloaded keeps honouring choices made in it for the rest of the
+  // page's life, even though nothing is persisted.
+  if (cache) cache = { ...cache, ...patch };
   const { sync, local } = splitByArea(patch);
   const writes = [];
-  if (Object.keys(sync).length) writes.push(guard(() => chrome.storage.sync.set(sync)));
+  if (Object.keys(sync).length) writes.push(writeSync(sync));
   if (Object.keys(local).length) writes.push(guard(() => chrome.storage.local.set(local)));
   await Promise.all(writes);
-  // The cache is still updated when the write could not happen, so a viewer
-  // whose extension has been reloaded keeps honouring choices made in it for
-  // the rest of the page's life, even though nothing is persisted.
-  if (cache) cache = { ...cache, ...patch };
 }
 
 /** Restore every preference to its default. */
 export async function resetSettings() {
+  // A change still waiting to be written would otherwise land after the reset
+  // and undo part of it.
+  clearTimeout(syncTimer);
+  syncTimer = null;
+  syncPending = null;
+  for (const resolve of syncWaiters) resolve();
+  syncWaiters = [];
   const syncKeys = Object.keys(DEFAULTS).filter((k) => !LOCAL_KEYS.includes(k));
   await Promise.all([
     chrome.storage.sync.remove(syncKeys),

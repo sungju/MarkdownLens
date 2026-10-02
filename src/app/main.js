@@ -75,6 +75,7 @@ export async function boot(context) {
   onSettingsChanged(async (next, patch) => {
     state.settings = next;
     applyAll();
+    if ('toc' in patch) refreshOutline();
     if (needsRerender(patch)) await renderDocument({ keepScroll: true });
     else if ('lineNumbers' in patch || 'copyButtons' in patch) await renderDocument({ keepScroll: true });
     if ('autoReload' in patch || 'autoReloadInterval' in patch) startWatcher();
@@ -136,6 +137,7 @@ function applyAll() {
   state.codeThemeId = codeThemeId;
 
   state.shell.root.classList.toggle('mdl-toc-right', state.settings.tocPosition === 'right');
+  state.shell.setOutlineEnabled(state.settings.toc);
   state.shell.setOutline(state.settings.toc && !state.settings.tocCollapsed);
   state.shell.setScheme(theme.scheme);
   state.shell.menus.themeMenu.sync(state.settings);
@@ -175,8 +177,7 @@ async function renderDocument({ keepScroll = false } = {}) {
 
   enhance(shell.article, settings);
 
-  state.toc?.destroy();
-  state.toc = buildToc(shell.article, shell.tocNav);
+  refreshOutline();
 
   if (shell.article.querySelector('.katex')) installMathStyles(document.head);
   if (settings.mermaid) await refreshDiagrams();
@@ -249,10 +250,23 @@ async function refreshDiagrams() {
 
 /* -------------------------------------------------------------- actions */
 
+/** Builds the outline when it is switched on, and empties it when it is not. */
+function refreshOutline() {
+  state.toc?.destroy();
+  state.toc = null;
+  state.shell.tocNav.textContent = '';
+  if (state.settings.toc) state.toc = buildToc(state.shell.article, state.shell.tocNav);
+}
+
+/**
+ * Opens or collapses the outline. Switched off in Settings, it stays off: the
+ * button is gone and the shortcut does nothing, so the only way back is the
+ * switch that turned it off.
+ */
 function toggleOutline(force) {
-  const open = force ?? !(state.settings.toc && !state.settings.tocCollapsed);
-  if (!state.settings.toc && open) setSettings({ toc: true, tocCollapsed: false });
-  else setSettings({ tocCollapsed: !open });
+  if (!state.settings.toc) return;
+  const open = force ?? state.settings.tocCollapsed;
+  setSettings({ tocCollapsed: !open });
 }
 
 function toggleScheme() {

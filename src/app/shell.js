@@ -115,6 +115,20 @@ export function buildShell({ actions }) {
       root.classList.toggle('mdl-toc-open', open);
       outlineBtn.setAttribute('aria-pressed', String(open));
     },
+    /**
+     * With the outline switched off it is taken out of the page altogether,
+     * button included, rather than hidden: nothing of it can be reopened,
+     * selected or copied.
+     */
+    setOutlineEnabled(enabled) {
+      if (enabled) {
+        if (!sidebar.isConnected) root.insertBefore(sidebar, main);
+        if (!outlineBtn.isConnected) toolbarLeft.prepend(outlineBtn);
+      } else {
+        sidebar.remove();
+        outlineBtn.remove();
+      }
+    },
     setRaw(on) {
       rawBtn.setAttribute('aria-pressed', String(on));
       rawBtn.classList.toggle('is-active', on);
