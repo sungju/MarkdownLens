@@ -1,6 +1,6 @@
 {
   "name": "markdown-lens",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Markdown Lens — a fast, themeable Markdown viewer for Chrome.",
   "private": true,
   "type": "module",

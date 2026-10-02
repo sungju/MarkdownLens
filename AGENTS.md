@@ -91,11 +91,34 @@ and the front matter table are deliberately left selectable — both are the
 document. The code-theme filter opts back in, since a field you cannot select
 text in is broken.
 
+**"Show the document outline" off means no outline at all.** The sidebar and
+its toolbar button are removed from the page, not hidden, and neither the
+button nor the `o` shortcut can turn the setting back on — only the switch in
+Settings or the popup can. Readers turn it off to copy documents cleanly, so
+nothing of the outline may survive in the page. The `outline-off` smoke passes
+press `o` to prove it stays gone.
+
+**Synced settings are written through a throttle.** `chrome.storage.sync`
+allows 120 writes a minute, and a Settings slider fires one input event per
+step. Written straight through, a few drags exhausted the quota; later changes
+were rejected inside `guard`, so Settings showed them as saved while open
+documents never heard of them (the outline stayed up after being switched
+off). `setSettings` now spaces synced writes 500 ms apart, merges what arrives
+in between, and retries a rejected write. The `settings-burst` smoke pass
+reproduces the original failure.
+
 **The rendered page carries nothing but the document.** No file name in the
 toolbar and no footer under the text: the browser tab already names the file,
 and a footer of company links on every document someone opens is the extension
 talking over their content. The Baram Soft and Support links live in Settings
 and the popup instead. The smoke suite fails if either comes back.
+
+**Live reload only polls this machine.** `createWatcher` refuses any URL that
+`isLocalUrl` does not accept (`localhost`, `127.x`, `::1`, `*.localhost`). It
+used to poll every `http(s)` document every 1.5 s, while the listing said the
+extension made no network requests: the kind of mismatch store review rejects
+for. Documents on other sites are re-read only by the Reload button. The
+listing and `PRIVACY.md` describe exactly this, so change all three together.
 
 **The privacy policy exists twice.** `PRIVACY.md` in the repo and
 <https://baramsoft.com/privacy-markdownlens/> published on the site. The store

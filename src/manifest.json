@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Markdown Lens",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Render Markdown files beautifully in Chrome. 20 document themes, every highlight.js code theme, math, diagrams, and a live outline.",
   "homepage_url": "https://baramsoft.com",
   "minimum_chrome_version": "128",

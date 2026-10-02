@@ -151,7 +151,7 @@
         <div class="field">
           <label for="reload-interval">Check every <output data-output="autoReloadInterval" data-suffix=" ms"></output></label>
           <input id="reload-interval" type="range" min="500" max="5000" step="100" data-setting="autoReloadInterval">
-          <p class="hint">Chrome blocks this for <code>file://</code> documents; the toolbar reload button still works there.</p>
+          <p class="hint">Works for documents served from your own computer (<code>localhost</code>). Anything else reloads when you press the toolbar's reload button.</p>
         </div>
         <label class="switch"><input type="checkbox" data-setting="rememberScroll"><span>Remember my scroll position</span></label>
         <label class="switch"><input type="checkbox" data-setting="openLinksInNewTab"><span>Open external links in a new tab</span></label>
@@ -194,7 +194,7 @@
         <h2>About</h2>
         <p class="hint">
           Markdown Lens is free software from <a href="https://baramsoft.com" target="_blank" rel="noopener noreferrer">Baram Soft</a>.
-          It has no accounts, no analytics and no network calls — every theme, font stack and
+          It has no accounts, no analytics and sends nothing anywhere — every theme, font stack and
           library is bundled with the extension.
         </p>
         <p class="hint">

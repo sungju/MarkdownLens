@@ -25,42 +25,51 @@ if it does not.
 
 ## Detailed description
 
-> Markdown Lens turns any Markdown file into a properly typeset document — the
-> moment you open it, with no upload and no round trip to a server.
+Write this as sentences, not lists of names. The first submission was
+rejected for keyword spam because one bullet listed the document themes by
+name; `npm run store-kit` now refuses copy with long comma-separated runs.
+
+> Markdown Lens turns Markdown files into clean, readable documents the moment
+> you open them, right in your browser. Nothing is uploaded and nothing leaves
+> your computer.
 >
-> PICK A LOOK THAT SUITS YOU
-> • 20 document themes: GitHub, Solarized, Nord, Dracula, One, Gruvbox, Tokyo
->   Night, Catppuccin, Rosé Pine, Sepia, Paper, Midnight and high-contrast
->   pairs, all in light and dark.
-> • Every one of the 258 highlight.js code themes is bundled. Search them from
->   the toolbar and preview each one on your own code as you hover.
-> • Let the code theme follow the document theme, set your own light/dark pair,
->   or pin one favourite. Press D to flip between light and dark at any time.
-> • Choose the body font, the code font, text size, line height, content width
->   and paragraph spacing — or write your own CSS.
+> CHOOSE HOW YOUR DOCUMENTS LOOK
+> • Twenty document themes, each in a light and a dark version, including
+>   high-contrast options for easier reading.
+> • Every highlight.js code colour scheme is included. Search them from the
+>   toolbar and preview each one on your own code before you choose.
+> • Code colours can follow the document theme, use their own light and dark
+>   pair, or stay on one favourite. Press D to switch between light and dark
+>   at any time.
+> • Adjust the fonts, text size, line spacing and page width, or add your own
+>   CSS.
 >
-> EVERYTHING MARKDOWN CAN DO
-> • Tables, task lists, footnotes, definition lists, abbreviations, subscript,
->   superscript, highlighted text and emoji.
-> • Mathematics with KaTeX, including display equations and align environments.
-> • Diagrams with Mermaid, recoloured when you switch themes.
-> • Note, tip, warning, caution and danger callouts.
-> • YAML, TOML and JSON front matter, shown as a tidy table.
+> FULL MARKDOWN SUPPORT
+> • Tables, task lists, footnotes and the other common Markdown extensions.
+> • Mathematical notation, typeset with KaTeX.
+> • Flowcharts and other diagrams written in Mermaid, coloured to match the
+>   current theme.
+> • Callout boxes for notes, tips and warnings.
+> • Document metadata at the top of a file is shown as a neat table.
 >
-> BUILT FOR READING
-> • A sticky outline that follows your position, docked left or right.
-> • Reading-progress bar, copy buttons on every code block, optional line
->   numbers, permalinks on headings.
-> • Raw source view, syntax highlighted too.
-> • Your scroll position is remembered. Printing works properly.
+> MADE FOR READING
+> • An outline of the headings that follows your position. Dock it on either
+>   side, or switch it off completely.
+> • A reading-progress bar, a copy button on every code block and optional
+>   line numbers.
+> • A source view that shows the original Markdown with syntax colouring.
+> • Your place in each document is remembered, and pages print cleanly.
 >
 > PRIVATE BY DESIGN
-> Markdown Lens makes no network requests at all. Every library, theme and font
-> is inside the extension. Nothing is collected, nothing is transmitted, and
+> Markdown Lens sends nothing anywhere and downloads no code. Everything it
+> needs is inside the extension. Nothing is collected or transmitted, and
 > there is no account to create.
 >
+> Editing a file on a local server? It refreshes as you save. Documents on
+> other sites are only re-read when you press Reload.
+>
 > To read files from your own disk, turn on "Allow access to file URLs" on the
-> extension's details page — Chrome keeps that off until you ask. Prefer not
+> extension's details page. Chrome keeps that off until you ask. Prefer not
 > to? Drag a file onto the bundled viewer instead.
 >
 > Free software from Baram Soft. https://baramsoft.com
@@ -80,16 +89,18 @@ Paste these into the dashboard's permission-justification fields.
 > feature and granted the matching host permission.
 
 **declarativeNetRequestWithHostAccess (optional)**
-> Only requested if the user enables the content-type fix. Rewrites the
-> Content-Type response header of documents served as text/markdown to
-> text/plain, so Chrome displays them instead of downloading them. One static
-> rule; no requests are blocked, redirected or inspected.
+> Not requested at install. Requested only when the user presses "Grant
+> access" next to "Scan every page for Markdown" in Settings. It adds one
+> static rule that rewrites the Content-Type response header of documents
+> served as text/markdown to text/plain, so Chrome displays them instead of
+> downloading them. No requests are blocked, redirected or inspected.
 
 **Host permission `*://*/*` (optional)**
-> Only requested if the user enables "scan every page" or the content-type fix.
-> It lets the extension examine plain-text pages to decide whether they are
-> Markdown. It is not requested at install time and revoking it disables both
-> features.
+> Not requested at install. Requested only when the user presses "Grant
+> access" next to "Scan every page for Markdown" in Settings. It lets the
+> extension check plain-text pages to see whether they are Markdown and render
+> them, and lets the Content-Type rule above apply. Revoking it turns the
+> feature off.
 
 **Content scripts on `file:///*` and `*://*/*.md` (and other Markdown
 extensions)**

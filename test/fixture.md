@@ -1,14 +1,17 @@
 ---
-title: Markdown Lens Test Fixture
+title: A Tour of Markdown Lens
 author: Baram Soft
-tags: [markdown, rendering, test]
+tags: [markdown, writing, documentation]
 draft: false
 ---
 
-# Markdown Lens test fixture
+<!-- This document is also the source of the store screenshots, so anything
+     visible near the top should read like a real document. -->
 
-A single document that exercises every renderer feature, so the smoke test has
-something to assert against. :rocket:
+# A tour of Markdown Lens
+
+Everything Markdown can do, rendered the moment you open the file. Scroll
+down for tables, code, math and diagrams. :rocket:
 
 ## Text
 
@@ -22,7 +25,7 @@ Regular paragraph with **bold**, *italic*, ***both***, ~~strikethrough~~,
 
 *[HTML]: HyperText Markup Language
 
-The HTML abbreviation should get a tooltip.
+Hover over HTML to see what the abbreviation stands for.
 
 Term
 : Definition of the term.

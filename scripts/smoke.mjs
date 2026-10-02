@@ -274,7 +274,7 @@ const PAGES = [
       ['renders the shell', r.booted],
       ['reveals the page after booting', r.visibility === 'visible' && !r.prebootStyle],
       ['lays the content out', (r.firstHeadingBox?.w ?? 0) > 200 && (r.firstHeadingBox?.h ?? 0) > 20],
-      ['uses the document title', r.title.includes('Markdown Lens test fixture')],
+      ['uses the document title', r.title.includes('A tour of Markdown Lens')],
       ['replaces the plain-text source', !r.rawScript],
       ['applies a document theme', !!r.theme],
       ['loads a code theme stylesheet', r.codeThemeHref.startsWith('chrome-extension://') && r.codeThemeHref.includes('/hljs/')],
@@ -409,6 +409,118 @@ const PAGES = [
       ['writes the code to the clipboard', r.clipboard.length > 0 && r.clipboard === r.expected],
       ['keeps line numbers out of the copied text', !/^\s*1\s*2\s*3/.test(r.clipboard)],
       ['confirms the copy in the button', r.done && /cop/i.test(r.label)],
+    ],
+  },
+  {
+    // "Show the document outline" switched off in Settings must keep the
+    // sidebar off the page, with the toolbar still showing.
+    name: 'outline-off',
+    url: ({ fixture }) => `${fixture}/fixture.md`,
+    settle: 2500,
+    seed: { toc: false, showToolbar: true },
+    // Pressing O used to switch the outline straight back on.
+    keys: ['o'],
+    probe: () => {
+      const main = document.querySelector('.mdl-main');
+      const range = document.createRange();
+      range.selectNodeContents(document.body);
+      return {
+        toc: !!document.querySelector('.mdl-toc, .mdl-toc-nav, .mdl-toc-link'),
+        outlineButton: !!document.querySelector('.mdl-toolbar button[aria-label="Outline"]'),
+        mainOffset: main ? parseFloat(getComputedStyle(main).marginLeft) : -1,
+        toolbar: !!document.querySelector('.mdl-toolbar') && getComputedStyle(document.querySelector('.mdl-toolbar')).display !== 'none',
+        pageText: range.toString(),
+      };
+    },
+    expect: (r) => [
+      ['keeps the toolbar', r.toolbar],
+      ['leaves no outline in the page', !r.toc],
+      ['leaves no outline button', !r.outlineButton],
+      ['leaves no outline text to copy', !r.pageText.includes('OUTLINE') && !/\bOutline\b/.test(r.pageText)],
+      ['gives the text the full width', r.mainOffset === 0],
+    ],
+  },
+  {
+    // The same switch flipped while the document is already open.
+    name: 'outline-off-live',
+    url: ({ fixture }) => `${fixture}/fixture.md`,
+    settle: 2500,
+    liveSeed: { toc: false },
+    // Pressing O used to switch the outline straight back on.
+    keys: ['o'],
+    probe: () => {
+      const main = document.querySelector('.mdl-main');
+      const range = document.createRange();
+      range.selectNodeContents(document.body);
+      return {
+        toc: !!document.querySelector('.mdl-toc, .mdl-toc-nav, .mdl-toc-link'),
+        outlineButton: !!document.querySelector('.mdl-toolbar button[aria-label="Outline"]'),
+        mainOffset: main ? parseFloat(getComputedStyle(main).marginLeft) : -1,
+        toolbar: !!document.querySelector('.mdl-toolbar') && getComputedStyle(document.querySelector('.mdl-toolbar')).display !== 'none',
+        pageText: range.toString(),
+      };
+    },
+    expect: (r) => [
+      ['keeps the toolbar', r.toolbar],
+      ['leaves no outline in the page', !r.toc],
+      ['leaves no outline button', !r.outlineButton],
+      ['leaves no outline text to copy', !r.pageText.includes('OUTLINE') && !/\bOutline\b/.test(r.pageText)],
+      ['gives the text the full width', r.mainOffset === 0],
+    ],
+  },
+  {
+    // Switching the outline back on with the document open has to rebuild it,
+    // since switching it off removed it from the page.
+    name: 'outline-back-on',
+    url: ({ fixture }) => `${fixture}/fixture.md`,
+    settle: 2500,
+    seed: { toc: false },
+    liveSeed: { toc: true },
+    probe: () => ({
+      links: document.querySelectorAll('.mdl-toc .mdl-toc-link').length,
+      button: !!document.querySelector('.mdl-toolbar button[aria-label="Outline"]'),
+      open: !!document.querySelector('.mdl-root.mdl-toc-open'),
+    }),
+    expect: (r) => [
+      ['rebuilds the outline', r.links >= 8],
+      ['brings the outline button back', r.button],
+      ['opens the outline', r.open],
+    ],
+  },
+  {
+    // Dragging a slider fires an input event per step. Chrome's synced storage
+    // takes 120 writes a minute, so a few drags used to exhaust it and every
+    // later change — the outline switch included — was silently dropped while
+    // the Settings page went on showing it as saved.
+    name: 'settings-burst',
+    url: ({ ext }) => `${ext}/options.html`,
+    settle: 1500,
+    actions: [
+      {
+        expression: `(() => {
+          const range = document.querySelector('[data-setting="contentWidth"]');
+          for (let i = 0; i < 200; i++) {
+            range.value = String(560 + (i % 40) * 20);
+            range.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+          const toc = document.querySelector('[data-setting="toc"]');
+          toc.checked = false;
+          toc.dispatchEvent(new Event('change', { bubbles: true }));
+        })()`,
+        wait: 1500,
+      },
+    ],
+    probe: async () => {
+      const stored = await chrome.storage.sync.get(['toc', 'contentWidth']);
+      return {
+        toc: stored.toc,
+        contentWidth: stored.contentWidth,
+        shown: Number(document.querySelector('[data-setting="contentWidth"]').value),
+      };
+    },
+    expect: (r) => [
+      ['saves a switch flipped after dragging a slider', r.toc === false],
+      ['saves where the slider was left', r.contentWidth === r.shown],
     ],
   },
   {
@@ -706,6 +818,13 @@ async function visit(client, page, urls) {
   await client.send('Page.navigate', { url }, sessionId);
   await sleep(page.settle);
 
+  // Settings changed while the page is already open, the way a reader flips a
+  // switch in Settings with a document sitting in another tab.
+  if (page.liveSeed) {
+    await seedSettings(client, urls.ext, page.liveSeed);
+    await sleep(600);
+  }
+
   for (const { expression, wait } of page.actions || []) {
     const { exceptionDetails } = await client.send('Runtime.evaluate', { expression }, sessionId);
     if (exceptionDetails) {
@@ -939,6 +1058,50 @@ function pngSize(file) {
   return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
 }
 
+/**
+ * The listing and the privacy policy promise that a document on someone
+ * else's site is never re-requested on a timer. This holds the watcher to it.
+ */
+async function checkLiveReloadScope() {
+  const { isLocalUrl, createWatcher } = await import(new URL('../src/app/watch.js', import.meta.url));
+  const checks = [];
+
+  for (const url of ['http://localhost:8000/a.md', 'http://127.0.0.1/a.md', 'http://[::1]:3000/a.md',
+    'http://docs.localhost/a.md', 'file:///Users/me/a.md']) {
+    checks.push([`treats ${url} as local`, isLocalUrl(url) === true]);
+  }
+  for (const url of ['https://raw.githubusercontent.com/x/y/main/README.md', 'http://localhost.example.com/a.md',
+    'http://127.0.0.1.nip.io/a.md', 'http://192.168.1.10/a.md', 'not a url']) {
+    checks.push([`treats ${url} as remote`, isLocalUrl(url) === false]);
+  }
+
+  // Run the watcher for real against a remote address and count requests.
+  const originalFetch = globalThis.fetch;
+  const originalDocument = globalThis.document;
+  let requests = 0;
+  globalThis.fetch = async () => { requests++; return new Response('changed'); };
+  globalThis.document = { hidden: false };
+  try {
+    const remote = createWatcher({ url: 'https://example.com/a.md', interval: 400, enabled: true,
+      current: () => 'same', onChange: async () => {} });
+    remote.start();
+    await sleep(1000);
+    remote.stop();
+    checks.push(['never polls a remote document', requests === 0]);
+
+    const local = createWatcher({ url: 'http://localhost:8000/a.md', interval: 400, enabled: true,
+      current: () => 'same', onChange: async () => {} });
+    local.start();
+    await sleep(1000);
+    local.stop();
+    checks.push(['polls a local one', requests >= 1]);
+  } finally {
+    globalThis.fetch = originalFetch;
+    globalThis.document = originalDocument;
+  }
+  return checks;
+}
+
 async function checkOrphanedContext() {
   const { extensionAlive, guard, guardSync } =
     await import(new URL('../src/common/runtime.js', import.meta.url));
@@ -990,10 +1153,17 @@ async function main() {
 
   let failures = 0;
 
-  // These two need no browser, and a failure in either is worth knowing about
+  // These need no browser, and a failure in either is worth knowing about
   // before spending a minute on the browser passes.
   console.log('store-readiness');
   for (const [label, ok] of checkStoreReadiness()) {
+    if (!ok) failures++;
+    console.log(`  ${ok ? '✓' : '✗'} ${label}`);
+  }
+  console.log();
+
+  console.log('live-reload-scope');
+  for (const [label, ok] of await checkLiveReloadScope()) {
     if (!ok) failures++;
     console.log(`  ${ok ? '✓' : '✗'} ${label}`);
   }

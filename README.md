@@ -4,8 +4,8 @@ A fast, themeable Markdown viewer for Chrome. Open any `.md` file — local or o
 the web — and it is rendered with real typography, a live outline, syntax
 highlighting, math and diagrams.
 
-Free software from [Baram Soft](https://baramsoft.com). No account, no network
-calls, no tracking.
+Free software from [Baram Soft](https://baramsoft.com). No account, no
+tracking, and nothing sent anywhere.
 
 ## Features
 
@@ -45,7 +45,7 @@ calls, no tracking.
 
 | Key       | Action                 |
 | --------- | ---------------------- |
-| `o`       | Toggle the outline     |
+| `o`       | Open or close the outline (when it is switched on) |
 | `r`       | Toggle the raw source  |
 | `d`       | Light / dark           |
 | `Shift+P` | Print                  |

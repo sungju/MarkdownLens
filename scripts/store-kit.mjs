@@ -104,6 +104,16 @@ const short = pick('Short description')[0].text.replace(/\n/g, ' ').replace(/\s+
 if (short.length > 132) fail(`short description is ${short.length} characters; the limit is 132`);
 if (short !== description) fail('STORE.md short description differs from the manifest description, which is what the store shows');
 const detailed = pick('Detailed description')[0].text;
+
+// The store rejects descriptions that read as keyword lists ("Keyword spam",
+// first submission): a sentence carrying a long run of comma-separated names.
+// More than four commas in one sentence is treated as a list and refused.
+const listy = detailed
+  .split(/(?<=[.!?])\s+|\n/)
+  .filter((sentence) => (sentence.match(/,/g) || []).length > 4);
+if (listy.length) {
+  fail(`detailed description reads as a keyword list — rewrite as prose:\n  ${listy.join('\n  ')}`);
+}
 const purpose = pick('Single purpose')[0].text.replace(/\n/g, ' ').trim();
 const permissions = pick('Permission justifications')
   .map(({ label, text }) => `=== ${label} ===\n${text.replace(/\n(?!\n)/g, ' ').trim()}\n`)

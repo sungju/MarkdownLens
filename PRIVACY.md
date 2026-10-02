@@ -1,6 +1,6 @@
 # Privacy Policy — Markdown Lens
 
-_Last updated: 1 October 2026_
+_Last updated: 3 October 2026_
 
 Markdown Lens does not collect, transmit, sell or share any data. There is no
 analytics, no telemetry, no crash reporting and no remote code.
@@ -32,13 +32,21 @@ revoking the permission turns them off again.
 
 ## Network access
 
-None. The extension makes no requests to any server. Every library, every one
-of the 258 code themes, the KaTeX stylesheet and its fonts are bundled inside
-the package, which is also why the download is larger than a typical extension.
+The extension sends nothing anywhere and downloads no code. Every library,
+every one of the 258 code themes, the KaTeX stylesheet and its fonts are
+bundled inside the package, which is also why the download is larger than a
+typical extension.
 
-The one exception is under your direct control: the **Reload** button re-reads
-the document you are already viewing, from the same address your browser
-already loaded it from.
+It only ever re-reads the document you are already viewing, from the same
+address your browser already loaded it from, and only in two cases:
+
+- when you press the **Reload** button;
+- when **Reload automatically** is on (it is by default) and the document is
+  served from your own computer — `localhost` or `127.0.0.1` — so a file you
+  are editing updates as you save it. Documents on any other site are never
+  re-read on a timer.
+
+No cookies or credentials are sent with these requests.
 
 ## Children
 

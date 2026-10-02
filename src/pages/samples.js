@@ -19,7 +19,7 @@ with your fonts, your colours and your favourite code theme.
 
 - 20 document themes and every highlight.js code theme
 - Math, diagrams, footnotes and task lists
-- Nothing leaves your machine — no network calls at all
+- Nothing leaves your machine — no accounts and no tracking
 
 > Everything is bundled with the extension, including the fonts metrics for math.
 
