@@ -8,7 +8,9 @@ export const ICONS = {
   code: svg('<path d="M5.5 11 2.5 8l3-3M10.5 5l3 3-3 3M9.3 3.2 6.7 12.8"/>'),
   raw: svg('<path d="M4 2h5l3 3v9H4z"/><path d="M9 2v3h3M6 8.5h4M6 11h3"/>'),
   print: svg('<path d="M4.5 6V2h7v4"/><path d="M3 6h10a1 1 0 0 1 1 1v4h-2.5"/><path d="M4.5 11H2V7a1 1 0 0 1 1-1"/><path d="M4.5 9.5h7V14h-7z"/>'),
-  settings: svg('<circle cx="8" cy="8" r="2.1"/><path d="M8 1.5v1.6M8 12.9v1.6M14.5 8h-1.6M3.1 8H1.5M12.6 3.4l-1.1 1.1M4.5 11.5l-1.1 1.1M12.6 12.6l-1.1-1.1M4.5 4.5 3.4 3.4"/>'),
+  // A gear with eight squared teeth. The old rayed circle read as the sun icon
+  // that sits beside it in dark themes.
+  settings: svg('<path d="M6.91 3.02 6.92 1.49h2.16l.01 1.53 1.66.68 1.09-1.07 1.53 1.53-1.07 1.09.68 1.66 1.53.01v2.16l-1.53.01-.68 1.66 1.07 1.09-1.53 1.53-1.09-1.07-1.66.68-.01 1.53H6.92l-.01-1.53-1.66-.68-1.09 1.07-1.53-1.53 1.07-1.09-.68-1.66-1.53-.01V6.92l1.53-.01.68-1.66-1.07-1.09 1.53-1.53 1.09 1.07Z"/><circle cx="8" cy="8" r="2"/>'),
   sun: svg('<circle cx="8" cy="8" r="3"/><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.95 3.05l-1.13 1.13M4.18 11.82l-1.13 1.13M12.95 12.95l-1.13-1.13M4.18 4.18 3.05 3.05"/>'),
   moon: svg('<path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.8 5.8 0 1 0 7.1 7.1Z"/>'),
   top: svg('<path d="M8 13V3.5M3.75 7.75 8 3.5l4.25 4.25"/>'),
