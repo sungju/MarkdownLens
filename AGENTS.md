@@ -7,24 +7,25 @@ to reconstruct from the code alone.
 
 ## Status
 
-Version 1.0.0, **built and verified but not yet submitted** to the Chrome Web
-Store. `main` is pushed to <https://github.com/sungju/MarkdownLens>.
+Version 1.0.2, **built and verified but not yet submitted** to the Chrome Web
+Store. It is the first version prepared under Sungju Kwon's own name. The
+repository is <https://github.com/sungju/MarkdownLens>.
 
-The upload package is `releases/markdown-lens-1.0.0.zip`, rebuilt with
+The upload package is `releases/markdown-lens-1.0.2.zip`, rebuilt with
 `npm run release`. `releases/` and `test/screenshots/` are both gitignored, so
 after a fresh clone neither exists until you run `npm run release` and
 `npm test` respectively.
 
-Remaining to submit: upload the zip, paste the listing copy from `STORE.md`,
-attach the five 1280×800 screenshots from `test/screenshots/` and the promo
-tile from `store/`. Nothing in the code is blocking.
+Remaining to submit: push `main`, because the privacy policy the listing points
+at is the file on GitHub, then work through `UPLOAD.md` in the folder
+`npm run store-kit` makes. Nothing in the code is blocking.
 
 ## House rules
 
 - **The AI tooling's name appears nowhere in this repository** — not in code,
-  comments, metadata, documentation or commit messages. This is a Baram Soft
-  standard and it applies to the published repo and the published package.
-  It is why this file is `AGENTS.md` and not the more conventional name.
+  comments, metadata, documentation or commit messages. The rule
+  applies to the published repo and the published package. It is why this file
+  is `AGENTS.md` and not the more conventional name.
 - Comments explain *why*, not *what*. Match the density already in the file
   you are editing; most functions have a short block above them explaining the
   reasoning, and most non-obvious lines have a sentence.
@@ -34,9 +35,9 @@ tile from `store/`. Nothing in the code is blocking.
 
 ## Testing discipline
 
-`npm test` is the whole suite: 123 checks across 13 lanes. Two run in Node
-before Chrome starts (`store-readiness`, `orphaned-context`); the rest drive a
-headless Chrome over the DevTools protocol.
+`npm test` is the whole suite: 151 checks across 18 lanes. Three run in
+Node before Chrome starts (`store-readiness`, `live-reload-scope`,
+`orphaned-context`); the rest drive a headless Chrome over the DevTools protocol.
 
 **A new assertion must be shown to fail before it is trusted.** Break the thing
 deliberately, confirm the check goes red, then restore. This caught a real
@@ -53,10 +54,11 @@ with a before/after table for each.
 
 ## Decisions worth knowing
 
-**Free, with no in-app purchase.** The Baram Soft standard is free-app-plus-IAP,
-but Chrome Web Store payments shut down in 2021, so there is no store-native
-purchase mechanism to wire up. Settings carries a Support link instead. This
-waiver is specific to browser extensions.
+**A personal product, free, with no in-app purchase.** Markdown Lens is
+published by Sungju Kwon as an individual: no company name, site or address
+appears in the package or the listing, and the website, support and privacy
+links all point at the GitHub repository. Chrome Web Store payments shut down
+in 2021, so there is no store-native purchase mechanism to wire up either.
 
 **`minimum_chrome_version` is 128, not lower.** The content-type feature
 rewrites `text/markdown` responses using declarativeNetRequest *response
@@ -109,8 +111,8 @@ reproduces the original failure.
 
 **The rendered page carries nothing but the document.** No file name in the
 toolbar and no footer under the text: the browser tab already names the file,
-and a footer of company links on every document someone opens is the extension
-talking over their content. The Baram Soft and Support links live in Settings
+and a footer of links on every document someone opens is the extension talking
+over their content. The developer and Support links live in Settings
 and the popup instead. The smoke suite fails if either comes back.
 
 **Live reload only polls this machine.** `createWatcher` refuses any URL that
@@ -120,11 +122,10 @@ extension made no network requests: the kind of mismatch store review rejects
 for. Documents on other sites are re-read only by the Reload button. The
 listing and `PRIVACY.md` describe exactly this, so change all three together.
 
-**The privacy policy exists twice.** `PRIVACY.md` in the repo and
-<https://baramsoft.com/privacy-markdownlens/> published on the site. The store
-holds the listing to whichever it can read, so changing one means changing the
-other. Nothing enforces this — the test only checks that the extension links to
-the right address, not that the words still match.
+**The privacy policy is `PRIVACY.md` on `main`.** The store listing and the
+extension's own pages link to the rendered file on GitHub, so there is one copy
+and nothing to keep in step. It does mean the repository has to stay public,
+the file has to keep its path, and an edit only counts once it is pushed.
 
 **Assets.** Icons are rasterised by hand in `scripts/make-icons.mjs` with no
 native dependencies. The 440×280 promo tile is screenshotted from a small HTML

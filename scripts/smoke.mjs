@@ -344,7 +344,7 @@ const PAGES = [
         handlerAttrs,
         badHrefs: hrefs.filter((h) => /^(?:javascript|vbscript|data):/i.test(h.replace(/[\u0000- ]/g, ''))),
         // The benign tail of the document has to come through untouched.
-        goodLink: !!article?.querySelector('a[href="https://baramsoft.com"]'),
+        goodLink: !!article?.querySelector('a[href="https://github.com/sungju/MarkdownLens"]'),
         highlighted: article ? article.querySelectorAll('.hljs-string, .hljs-keyword').length : 0,
         tableCells: article ? article.querySelectorAll('td').length : 0,
         // This fixture carries TOML front matter, a format the store listing
@@ -368,7 +368,7 @@ const PAGES = [
       ['folds multi-line TOML arrays and keeps hashes inside strings',
         r.frontMatterText.includes('security, sanitising') && r.frontMatterText.includes('#f6f8fa')],
       ['reads TOML strings, numbers, booleans and dates',
-        ['Hostile input fixture', 'Baram Soft', '42', '1.5', 'false', '2026-10-01']
+        ['Hostile input fixture', 'Sungju Kwon', '42', '1.5', 'false', '2026-10-01']
           .every((text) => r.frontMatterText.includes(text))],
       ['reads TOML arrays and tables',
         r.frontMatterText.includes('security, sanitising') && r.frontMatterText.includes('depth: 2')],
@@ -643,8 +643,8 @@ const PAGES = [
         .map((key) => [key, document.querySelector(`[data-setting="${key}"]`)?.value ?? '']),
       preview: document.querySelectorAll('#preview .mdl-code-block').length,
       previewHighlighted: document.querySelectorAll('#preview .hljs-keyword').length,
-      support: [...document.querySelectorAll('a')].some((a) => a.href.startsWith('https://baramsoft.com/support')),
-      privacy: [...document.querySelectorAll('a')].some((a) => a.href === 'https://baramsoft.com/privacy-markdownlens/'),
+      support: [...document.querySelectorAll('a')].some((a) => a.href.startsWith('https://github.com/sungju/MarkdownLens/issues')),
+      privacy: [...document.querySelectorAll('a')].some((a) => a.href === 'https://github.com/sungju/MarkdownLens/blob/main/PRIVACY.md'),
     }),
     expect: (r) => [
       ['renders the settings cards', r.cards >= 6],
@@ -691,8 +691,8 @@ const PAGES = [
       sample: !!document.getElementById('open-sample'),
       fileState: document.getElementById('file-state')?.textContent || '',
       theme: document.documentElement.dataset.mdlTheme || '',
-      support: [...document.querySelectorAll('a')].some((a) => a.href.startsWith('https://baramsoft.com/support')),
-      privacy: [...document.querySelectorAll('a')].some((a) => a.href === 'https://baramsoft.com/privacy-markdownlens/'),
+      support: [...document.querySelectorAll('a')].some((a) => a.href.startsWith('https://github.com/sungju/MarkdownLens/issues')),
+      privacy: [...document.querySelectorAll('a')].some((a) => a.href === 'https://github.com/sungju/MarkdownLens/blob/main/PRIVACY.md'),
     }),
     expect: (r) => [
       ['explains the first-run steps', r.steps >= 3],
@@ -1008,7 +1008,18 @@ function checkStoreReadiness() {
   checks.push([`name fits the 75-char limit (${manifest.name.length})`, manifest.name.length <= 75]);
   checks.push([`description fits the 132-char limit (${manifest.description.length})`,
     manifest.description.length > 0 && manifest.description.length <= 132]);
-  checks.push(['points at the company site', manifest.homepage_url === 'https://baramsoft.com']);
+  checks.push(['points at the project page', manifest.homepage_url === 'https://github.com/sungju/MarkdownLens']);
+
+  // This is a personal product, so everything the package links to has to be
+  // the project's own repository. Read from dist/, because that is what ships.
+  const pages = ['options.html', 'popup.html', 'welcome.html', 'viewer.html'];
+  const foreign = pages.flatMap((page) => [...readFileSync(path.join(DIST, page), 'utf8')
+    .matchAll(/href="(https?:[^"]+)"/g)]
+    .map((m) => m[1])
+    .filter((href) => href !== manifest.homepage_url && !href.startsWith(`${manifest.homepage_url}/`))
+    .map((href) => `${page} → ${href}`));
+  checks.push([`every page links only to the project${foreign.length ? `: ${foreign}` : ''}`,
+    foreign.length === 0]);
 
   // An unknown top-level key is not an upload error — Chrome's own packer
   // ignores them silently — so nothing but a whitelist will catch a typo or a

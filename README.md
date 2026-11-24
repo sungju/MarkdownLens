@@ -4,7 +4,7 @@ A fast, themeable Markdown viewer for Chrome. Open any `.md` file — local or o
 the web — and it is rendered with real typography, a live outline, syntax
 highlighting, math and diagrams.
 
-Free software from [Baram Soft](https://baramsoft.com). No account, no
+Free software by [Sungju Kwon](https://github.com/sungju). No account, no
 tracking, and nothing sent anywhere.
 
 ## Features
@@ -149,4 +149,4 @@ relative luminance. Do not edit it by hand.
 
 MIT — see [LICENSE](LICENSE). Bundled libraries keep their own licences.
 
-Support: <https://baramsoft.com/support/>
+Support: <https://github.com/sungju/MarkdownLens/issues>

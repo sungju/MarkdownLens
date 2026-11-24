@@ -1,11 +1,13 @@
 {
   "name": "markdown-lens",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Markdown Lens — a fast, themeable Markdown viewer for Chrome.",
   "private": true,
   "type": "module",
   "license": "MIT",
-  "homepage": "https://baramsoft.com",
+  "author": "Sungju Kwon",
+  "homepage": "https://github.com/sungju/MarkdownLens",
+  "bugs": "https://github.com/sungju/MarkdownLens/issues",
   "scripts": {
     "icons": "node scripts/make-icons.mjs",
     "promo": "node scripts/make-promo.mjs",

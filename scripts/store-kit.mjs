@@ -136,6 +136,12 @@ await writeFile(path.join(KIT, 'UPLOAD.md'), `# Markdown Lens ${version} — upl
 
 Dashboard: https://chrome.google.com/webstore/devconsole
 
+## Before uploading
+- [ ] Push \`main\`, so the privacy policy page shows the current text
+- [ ] Account page → Publisher name is "Sungju Kwon", and the contact email is
+      verified
+- [ ] Account page → trader declaration matches a personal, free product
+
 ## Package
 - [ ] Upload \`${path.basename(zip)}\`
 
@@ -148,8 +154,9 @@ Dashboard: https://chrome.google.com/webstore/devconsole
 - [ ] Store icon → \`store-icon-128.png\`
 - [ ] Screenshots → \`screenshots/1-…\` to \`5-…\`, in that order (all 1280×800)
 - [ ] Small promo tile → \`small-promo-tile-440x280.png\`
-- [ ] Official URL / Homepage → https://baramsoft.com
-- [ ] Support URL → https://baramsoft.com/support/
+- [ ] Official URL → None
+- [ ] Homepage URL → https://github.com/sungju/MarkdownLens
+- [ ] Support URL → https://github.com/sungju/MarkdownLens/issues
 
 ## Privacy practices tab
 - [ ] Single purpose → paste \`single-purpose.txt\`
@@ -157,7 +164,7 @@ Dashboard: https://chrome.google.com/webstore/devconsole
       \`permission-justifications.txt\` into its field
 - [ ] Remote code → "No, I am not using remote code"
 - [ ] Data usage → tick nothing as collected; certify all three statements
-- [ ] Privacy policy URL → https://baramsoft.com/privacy-markdownlens/
+- [ ] Privacy policy URL → https://github.com/sungju/MarkdownLens/blob/main/PRIVACY.md
 
 ## Distribution tab
 - [ ] Payments → Free

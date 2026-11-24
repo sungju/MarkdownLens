@@ -1,9 +1,10 @@
 # Privacy Policy — Markdown Lens
 
-_Last updated: 3 October 2026_
+_Last updated: 24 November 2026_
 
-Markdown Lens does not collect, transmit, sell or share any data. There is no
-analytics, no telemetry, no crash reporting and no remote code.
+Markdown Lens is a personal project by Sungju Kwon. It does not collect,
+transmit, sell or share any data. There is no analytics, no telemetry, no crash
+reporting and no remote code.
 
 ## What the extension stores
 
@@ -14,8 +15,8 @@ analytics, no telemetry, no crash reporting and no remote code.
 | Scroll position per document | `chrome.storage.session` | So reopening a document returns you to where you were. Cleared when Chrome closes. |
 
 All three are Chrome's own storage areas on your device. Synced settings travel
-through your Google account exactly like your bookmarks do; Baram Soft has no
-access to them and operates no server for this extension.
+through your Google account exactly like your bookmarks do; the developer,
+Sungju Kwon, has no access to them and operates no server for this extension.
 
 ## What the extension reads
 
@@ -59,4 +60,4 @@ and dated at the top of this file.
 
 ## Contact
 
-Questions or concerns: <https://baramsoft.com/support/>
+Questions or concerns: <https://github.com/sungju/MarkdownLens/issues>

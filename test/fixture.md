@@ -1,6 +1,6 @@
 ---
 title: A Tour of Markdown Lens
-author: Baram Soft
+author: Sungju Kwon
 tags: [markdown, writing, documentation]
 draft: false
 ---
@@ -17,7 +17,7 @@ down for tables, code, math and diagrams. :rocket:
 
 Regular paragraph with **bold**, *italic*, ***both***, ~~strikethrough~~,
 ==highlighted==, ++inserted++, `inline code`, H~2~O, 10^3^, and a
-[link to the site](https://baramsoft.com).
+[link to the site](https://github.com/sungju/MarkdownLens).
 
 > A blockquote.
 >

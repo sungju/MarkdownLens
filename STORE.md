@@ -7,10 +7,11 @@ Copy for the developer dashboard. Not shipped in the package.
 - **Name:** Markdown Lens
 - **Category:** Developer Tools (secondary: Productivity)
 - **Language:** English
+- **Developer:** Sungju Kwon (personal developer account)
 - **Price:** Free, no in-app purchases
-- **Website:** https://baramsoft.com
-- **Support URL:** https://baramsoft.com/support/
-- **Privacy policy URL:** https://baramsoft.com/privacy-markdownlens/
+- **Website:** https://github.com/sungju/MarkdownLens
+- **Support URL:** https://github.com/sungju/MarkdownLens/issues
+- **Privacy policy URL:** https://github.com/sungju/MarkdownLens/blob/main/PRIVACY.md
 
 ## Short description (132 characters max)
 
@@ -30,8 +31,8 @@ rejected for keyword spam because one bullet listed the document themes by
 name; `npm run store-kit` now refuses copy with long comma-separated runs.
 
 > Markdown Lens turns Markdown files into clean, readable documents the moment
-> you open them, right in your browser. Nothing is uploaded and nothing leaves
-> your computer.
+> you open them, right in your browser. Your documents are never uploaded and
+> never leave your browser.
 >
 > CHOOSE HOW YOUR DOCUMENTS LOOK
 > • Twenty document themes, each in a light and a dark version, including
@@ -61,9 +62,9 @@ name; `npm run store-kit` now refuses copy with long comma-separated runs.
 > • Your place in each document is remembered, and pages print cleanly.
 >
 > PRIVATE BY DESIGN
-> Markdown Lens sends nothing anywhere and downloads no code. Everything it
-> needs is inside the extension. Nothing is collected or transmitted, and
-> there is no account to create.
+> Markdown Lens never sends your documents anywhere and downloads no code.
+> Everything it needs is inside the extension. Nothing about you is collected,
+> and there is no account to create.
 >
 > Editing a file on a local server? It refreshes as you save. Documents on
 > other sites are only re-read when you press Reload.
@@ -72,7 +73,7 @@ name; `npm run store-kit` now refuses copy with long comma-separated runs.
 > extension's details page. Chrome keeps that off until you ask. Prefer not
 > to? Drag a file onto the bundled viewer instead.
 >
-> Free software from Baram Soft. https://baramsoft.com
+> Free software by Sungju Kwon. https://github.com/sungju/MarkdownLens
 
 ## Permission justifications
 
@@ -91,8 +92,8 @@ Paste these into the dashboard's permission-justification fields.
 **declarativeNetRequestWithHostAccess (optional)**
 > Not requested at install. Requested only when the user presses "Grant
 > access" next to "Scan every page for Markdown" in Settings. It adds one
-> static rule that rewrites the Content-Type response header of documents
-> served as text/markdown to text/plain, so Chrome displays them instead of
+> dynamic rule that rewrites the Content-Type response header of documents
+> served as text/markdown or text/x-markdown to text/plain, so Chrome displays them instead of
 > downloading them. No requests are blocked, redirected or inspected.
 
 **Host permission `*://*/*` (optional)**
@@ -153,7 +154,8 @@ excludes nobody.
 
 ## Release checklist
 
-1. Bump `version` in both `package.json` and `src/manifest.json`.
+1. Bump `version` in `package.json`, `package-lock.json` and
+   `src/manifest.json`.
 2. `npm test` — every check green.
 3. `npm run release` — produces `releases/markdown-lens-<version>.zip`.
 4. Update the listing copy above if features changed.
@@ -163,9 +165,13 @@ excludes nobody.
 
 ### Dashboard fields that live outside this repo
 
-- **Privacy policy URL** — <https://baramsoft.com/privacy-markdownlens/>.
+- **Privacy policy URL** — <https://github.com/sungju/MarkdownLens/blob/main/PRIVACY.md>.
   The dashboard requires one even though the extension collects nothing.
-  That page is the published copy of `PRIVACY.md`; when one changes, change
-  the other, because the store holds you to whichever it can read.
-- **Support URL** — <https://baramsoft.com/support/>.
+  That page is `PRIVACY.md` as it stands on `main`, so a change to it is not
+  public until it is pushed: push before submitting.
+- **Support URL** — <https://github.com/sungju/MarkdownLens/issues>.
 - **Category** — Developer Tools.
+- **Publisher name** — comes from the developer account, not the package. Set
+  it to Sungju Kwon on the dashboard's Account page before submitting.
+- **Official URL** — leave as None. It only offers sites verified in Search
+  Console, and the Homepage URL field covers the project page.

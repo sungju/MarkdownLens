@@ -1,6 +1,6 @@
 +++
 title = "Hostile input fixture"   # trailing comments are ignored
-author = 'Baram Soft'
+author = 'Sungju Kwon'
 count = 42
 ratio = 1.5
 draft = false
@@ -13,7 +13,7 @@ colour = "#f6f8fa"   # a hash inside a string is not a comment
 escaped = "a \"quoted\" word\tand a tab"
 
 [meta]
-reviewer = "Baram Soft"
+reviewer = "Sungju Kwon"
 nested = { depth = 2 }
 +++
 
@@ -82,7 +82,7 @@ may execute, and none of it may survive into the rendered DOM.
 
 ## Benign content that must survive
 
-A [real link](https://baramsoft.com) and `inline code` and **bold text**.
+A [real link](https://github.com/sungju/MarkdownLens) and `inline code` and **bold text**.
 
 ```js
 const safe = "this should still highlight";
