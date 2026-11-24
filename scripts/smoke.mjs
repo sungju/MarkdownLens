@@ -182,6 +182,7 @@ const PAGES = [
     name: 'content-script',
     url: ({ fixture }) => `${fixture}/fixture.md`,
     settle: 3000,
+    seed: { toc: true },
     shots: [
       { suffix: '-admonitions', anchor: '#admonitions' },
       { suffix: '-code', anchor: '#code-blocks' },
@@ -412,6 +413,28 @@ const PAGES = [
     ],
   },
   {
+    // Nothing saved yet, as on a fresh install: the outline stays out of the
+    // page until the reader asks for it.
+    name: 'outline-default',
+    url: ({ fixture }) => `${fixture}/fixture.md`,
+    settle: 2500,
+    probe: () => {
+      const main = document.querySelector('.mdl-main');
+      return {
+        headings: document.querySelectorAll('.mdl-content h1, .mdl-content h2').length,
+        toc: !!document.querySelector('.mdl-toc, .mdl-toc-nav, .mdl-toc-link'),
+        outlineButton: !!document.querySelector('.mdl-toolbar button[aria-label="Outline"]'),
+        mainOffset: main ? parseFloat(getComputedStyle(main).marginLeft) : -1,
+      };
+    },
+    expect: (r) => [
+      ['renders the document', r.headings >= 8],
+      ['starts without an outline', !r.toc],
+      ['starts without an outline button', !r.outlineButton],
+      ['gives the text the full width', r.mainOffset === 0],
+    ],
+  },
+  {
     // "Show the document outline" switched off in Settings must keep the
     // sidebar off the page, with the toolbar still showing.
     name: 'outline-off',
@@ -445,6 +468,7 @@ const PAGES = [
     name: 'outline-off-live',
     url: ({ fixture }) => `${fixture}/fixture.md`,
     settle: 2500,
+    seed: { toc: true },
     liveSeed: { toc: false },
     // Pressing O used to switch the outline straight back on.
     keys: ['o'],
@@ -504,7 +528,7 @@ const PAGES = [
             range.dispatchEvent(new Event('input', { bubbles: true }));
           }
           const toc = document.querySelector('[data-setting="toc"]');
-          toc.checked = false;
+          toc.checked = true;
           toc.dispatchEvent(new Event('change', { bubbles: true }));
         })()`,
         wait: 1500,
@@ -519,7 +543,7 @@ const PAGES = [
       };
     },
     expect: (r) => [
-      ['saves a switch flipped after dragging a slider', r.toc === false],
+      ['saves a switch flipped after dragging a slider', r.toc === true],
       ['saves where the slider was left', r.contentWidth === r.shown],
     ],
   },
@@ -530,6 +554,7 @@ const PAGES = [
     name: 'content-script-dark',
     url: ({ fixture }) => `${fixture}/fixture.md`,
     settle: 3000,
+    seed: { toc: true },
     keys: ['d'],
     settleAfterKeys: 2000,
     shots: [{ suffix: '-code', anchor: '#code-blocks' }],
@@ -563,6 +588,7 @@ const PAGES = [
     name: 'code-theme-picker',
     url: ({ fixture }) => `${fixture}/fixture.md`,
     settle: 3000,
+    seed: { toc: true },
     actions: [
       { expression: `document.querySelector('[aria-label="Code theme"]').click()`, wait: 400 },
       { expression: `(() => {
@@ -597,6 +623,7 @@ const PAGES = [
     name: 'code-theme-applied',
     url: ({ fixture }) => `${fixture}/fixture.md`,
     settle: 3000,
+    seed: { toc: true },
     actions: [
       { expression: `document.querySelector('[aria-label="Code theme"]').click()`, wait: 400 },
       { expression: `document.querySelector('.mdl-menu-code [data-code="monokai"]').click()`, wait: 900 },
@@ -639,6 +666,7 @@ const PAGES = [
       themeOptions: document.querySelector('[data-setting="theme"]')?.options.length || 0,
       codeThemeOptions: document.querySelector('[data-setting="codeTheme"]')?.options.length || 0,
       fontOptions: document.querySelector('[data-setting="font"]')?.options.length || 0,
+      outline: document.querySelector('[data-setting="toc"]')?.checked,
       pairs: ['themeLight', 'themeDark', 'codeThemeLight', 'codeThemeDark']
         .map((key) => [key, document.querySelector(`[data-setting="${key}"]`)?.value ?? '']),
       preview: document.querySelectorAll('#preview .mdl-code-block').length,
@@ -652,6 +680,7 @@ const PAGES = [
       ['lists the document themes', r.themeOptions >= 20],
       ['lists the code themes', r.codeThemeOptions >= 100],
       ['lists the fonts', r.fontOptions >= 5],
+      ['leaves the outline unchecked by default', r.outline === false],
       // An empty pair select means the default is not in its light/dark group.
       ['resolves every light/dark pair', r.pairs.every(([, value]) => value !== '')],
       ['renders the live preview', r.preview >= 1],
@@ -710,6 +739,7 @@ const PAGES = [
     name: 'viewer',
     url: ({ ext }) => `${ext}/viewer.html?sample=1`,
     settle: 2500,
+    seed: { toc: true },
     probe: () => ({
       booted: !!document.querySelector('.mdl-root'),
       codeBlocks: document.querySelectorAll('.mdl-code-block').length,

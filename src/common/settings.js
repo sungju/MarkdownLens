@@ -34,8 +34,9 @@ export const DEFAULTS = {
   contentWidth: 860,
   paragraphSpacing: 1,
 
-  // Layout
-  toc: true,
+  // Layout. The outline is opt-in: the page is the document alone until the
+  // reader asks for more.
+  toc: false,
   tocPosition: 'left',
   tocCollapsed: false,
   showToolbar: true,

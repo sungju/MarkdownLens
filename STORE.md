@@ -54,8 +54,8 @@ name; `npm run store-kit` now refuses copy with long comma-separated runs.
 > • Document metadata at the top of a file is shown as a neat table.
 >
 > MADE FOR READING
-> • An outline of the headings that follows your position. Dock it on either
->   side, or switch it off completely.
+> • An optional outline of the headings that follows your position. Switch it
+>   on in Settings and dock it on either side.
 > • A reading-progress bar, a copy button on every code block and optional
 >   line numbers.
 > • A source view that shows the original Markdown with syntax colouring.

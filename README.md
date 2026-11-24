@@ -1,7 +1,7 @@
 # Markdown Lens
 
 A fast, themeable Markdown viewer for Chrome. Open any `.md` file — local or on
-the web — and it is rendered with real typography, a live outline, syntax
+the web — and it is rendered with real typography, an optional live outline, syntax
 highlighting, math and diagrams.
 
 Free software by [Sungju Kwon](https://github.com/sungju). No account, no
@@ -33,7 +33,8 @@ tracking, and nothing sent anywhere.
 
 **Reading**
 
-- Sticky outline that tracks your position, dockable left or right.
+- Optional sticky outline that tracks your position, dockable left or right.
+  Off by default; switch it on in Settings or the popup.
 - Reading-progress bar, copy buttons on code blocks, optional line numbers,
   permalinks on headings, horizontally scrollable tables.
 - Raw source view, also syntax highlighted.

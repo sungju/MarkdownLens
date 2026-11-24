@@ -7,11 +7,11 @@ to reconstruct from the code alone.
 
 ## Status
 
-Version 1.0.2, **built and verified but not yet submitted** to the Chrome Web
-Store. It is the first version prepared under Sungju Kwon's own name. The
+Version 1.0.3, **built and verified but not yet submitted** to the Chrome Web
+Store. Versions since 1.0.2 are under Sungju Kwon's own name. The
 repository is <https://github.com/sungju/MarkdownLens>.
 
-The upload package is `releases/markdown-lens-1.0.2.zip`, rebuilt with
+The upload package is `releases/markdown-lens-1.0.3.zip`, rebuilt with
 `npm run release`. `releases/` and `test/screenshots/` are both gitignored, so
 after a fresh clone neither exists until you run `npm run release` and
 `npm test` respectively.
@@ -35,7 +35,7 @@ at is the file on GitHub, then work through `UPLOAD.md` in the folder
 
 ## Testing discipline
 
-`npm test` is the whole suite: 151 checks across 18 lanes. Three run in
+`npm test` is the whole suite: 156 checks across 19 lanes. Three run in
 Node before Chrome starts (`store-readiness`, `live-reload-scope`,
 `orphaned-context`); the rest drive a headless Chrome over the DevTools protocol.
 
@@ -93,12 +93,15 @@ and the front matter table are deliberately left selectable — both are the
 document. The code-theme filter opts back in, since a field you cannot select
 text in is broken.
 
-**"Show the document outline" off means no outline at all.** The sidebar and
+**"Show the document outline" is off by default, and off means no outline at
+all.** The sidebar and
 its toolbar button are removed from the page, not hidden, and neither the
 button nor the `o` shortcut can turn the setting back on — only the switch in
 Settings or the popup can. Readers turn it off to copy documents cleanly, so
 nothing of the outline may survive in the page. The `outline-off` smoke passes
-press `o` to prove it stays gone.
+press `o` to prove it stays gone, and `outline-default` proves a fresh install
+starts that way. Passes that need the outline, the store screenshots included,
+seed `toc: true`.
 
 **Synced settings are written through a throttle.** `chrome.storage.sync`
 allows 120 writes a minute, and a Settings slider fires one input event per
