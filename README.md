@@ -57,21 +57,51 @@ tracking, and nothing sent anywhere.
 
 ## Install
 
-From the Chrome Web Store, or as an unpacked build:
+From the Chrome Web Store, or from the source as described here.
+
+### Local installation
+
+You need [Node.js](https://nodejs.org) 20 or later, npm, and Chrome 128 or later.
+
+1. Get the source and build it:
+
+   ```bash
+   git clone https://github.com/sungju/MarkdownLens.git
+   cd MarkdownLens
+   npm ci
+   npm run build
+   ```
+
+   Without Git, choose **Code → Download ZIP** on
+   [GitHub](https://github.com/sungju/MarkdownLens), unzip it, and run the two
+   `npm` commands in the unzipped folder.
+
+2. Open `chrome://extensions` and turn on **Developer mode** in the top right.
+3. Click **Load unpacked** and select the `dist/` folder the build
+   created.
+4. To render local files, open the extension's **Details** page and turn on
+   **Allow access to file URLs**. Chrome keeps that switch off for every
+   extension until you ask for it. If you would rather not grant it, the bundled
+   viewer (`viewer.html`) reads files you drag into it.
+5. Open any `.md` file, or reload one that is already open.
+
+Chrome runs the extension from that folder, so keep it where it is. If the Web
+Store version is installed too, turn one of the two off; they are separate
+extensions and do not share settings.
+
+### Updating a local installation
+
+In the folder you cloned:
 
 ```bash
-npm install
-npm run icons     # only needed once, or after changing the icon script
+git pull
+npm ci
 npm run build
 ```
 
-Then open `chrome://extensions`, turn on **Developer mode**, choose **Load
-unpacked** and select the `dist/` directory.
-
-To render local files, open the extension's details page and turn on **Allow
-access to file URLs**. Chrome keeps that switch off for every extension until
-you ask for it. If you would rather not grant it, the bundled viewer
-(`viewer.html`) reads files you drag into it.
+From a ZIP, replace the source files with the new ones instead of `git pull`.
+Then press the reload button on the extension's card at `chrome://extensions`,
+and reload any Markdown pages that are open. Your settings are kept.
 
 ## Permissions
 
