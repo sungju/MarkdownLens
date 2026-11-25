@@ -50,7 +50,7 @@ name; `npm run store-kit` now refuses copy with long comma-separated runs.
 > • Mathematical notation, typeset with KaTeX.
 > • Flowcharts and other diagrams written in Mermaid, coloured to match the
 >   current theme.
-> • Callout boxes for notes, tips and warnings.
+> • Callout boxes for notes, tips and warnings, including GitHub alerts.
 > • Document metadata at the top of a file is shown as a neat table.
 >
 > MADE FOR READING
