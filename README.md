@@ -27,7 +27,10 @@ tracking, and nothing sent anywhere.
   optional attribute syntax.
 - Math with KaTeX (`$…$`, `$$…$$` and `\begin{align}` environments).
 - Diagrams with Mermaid, rethemed when you switch between light and dark.
-- Admonitions: `::: note`, `::: warning`, `::: danger` and seven more.
+- Admonitions: `::: note`, `::: warning`, `::: danger` and seven more, and
+  GitHub alerts such as `> [!WARNING]`.
+- Addresses become links; file names such as `setup.py` do not. `$HOME` and `$5`
+  stay text.
 - YAML, TOML and JSON front matter, shown as a table or as raw source.
 - Output is sanitised with DOMPurify.
 

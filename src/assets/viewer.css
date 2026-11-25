@@ -79,6 +79,7 @@ html.mdl-host :focus-visible {
 .mdl-menu,
 .mdl-toast,
 .mdl-btn-label,
+.mdl-diagram-message,
 .mdl-code-bar {
   user-select: none;
 }

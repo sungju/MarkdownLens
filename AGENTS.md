@@ -7,11 +7,11 @@ to reconstruct from the code alone.
 
 ## Status
 
-Version 1.0.3, **built and verified but not yet submitted** to the Chrome Web
+Version 1.0.4, **built and verified but not yet submitted** to the Chrome Web
 Store. Versions since 1.0.2 are under Sungju Kwon's own name. The
 repository is <https://github.com/sungju/MarkdownLens>.
 
-The upload package is `releases/markdown-lens-1.0.3.zip`, rebuilt with
+The upload package is `releases/markdown-lens-1.0.4.zip`, rebuilt with
 `npm run release`. `releases/` and `test/screenshots/` are both gitignored, so
 after a fresh clone neither exists until you run `npm run release` and
 `npm test` respectively.
@@ -35,7 +35,7 @@ at is the file on GitHub, then work through `UPLOAD.md` in the folder
 
 ## Testing discipline
 
-`npm test` is the whole suite: 156 checks across 19 lanes. Three run in
+`npm test` is the whole suite: 167 checks across 20 lanes. Three run in
 Node before Chrome starts (`store-readiness`, `live-reload-scope`,
 `orphaned-context`); the rest drive a headless Chrome over the DevTools protocol.
 
@@ -129,6 +129,31 @@ listing and `PRIVACY.md` describe exactly this, so change all three together.
 extension's own pages link to the rendered file on GitHub, so there is one copy
 and nothing to keep in step. It does mean the repository has to stay public,
 the file has to keep its path, and an edit only counts once it is pushed.
+
+**What is on the page is what people paste.** A rendered document is often
+copied into a ticket, so text that would be wrong there is wrong here too:
+
+- Only addresses that say they are one (`https://…`, `www.example.com`, an
+  email) become links. Guessing turned `setup.py`, `README.md` and `install.sh`
+  into links to real domains someone else owns, and a careless `www.` rule does
+  the same to `www.conf` and `/var/www.example.com`.
+- Emoji are read from `:short_names:` only. The plugin's emoticons turned `<3`
+  and `:/` in technical text into pictures.
+- An inline formula may not hold a bare `$` or a `"`, start with one of `?@#!*`,
+  touch a word, or be followed by `(`, `@` or `#`. Money and shell variables are
+  far more common than `x$a$y`, and losing their signs changes what a command
+  means. Not every command is caught: `$$ … $$` on one
+  line is still display math.
+- The sanitiser keeps MathML `semantics` and `annotation`. Without them KaTeX's
+  TeX stayed behind as stray text in the MathML, and there was nothing to copy
+  a formula from. `annotation-xml` is an HTML integration point and stays out;
+  `test/hostile.md` covers both.
+- What the viewer adds around the text (line numbers, the outline, labels, the
+  diagram error) is `user-select: none`, so a copy leaves it behind.
+
+**GitHub alerts share the admonition boxes.** `> [!NOTE]` is how most Markdown
+now writes one, and without it the marker showed up as text in a quote. A line
+after the marker becomes the title, which GitHub itself does not do.
 
 **Assets.** Icons are rasterised by hand in `scripts/make-icons.mjs` with no
 native dependencies. The 440×280 promo tile is screenshotted from a small HTML

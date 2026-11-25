@@ -345,6 +345,8 @@ const PAGES = [
         handlerAttrs,
         badHrefs: hrefs.filter((h) => /^(?:javascript|vbscript|data):/i.test(h.replace(/[\u0000- ]/g, ''))),
         // The benign tail of the document has to come through untouched.
+        annotationXml: article ? article.querySelectorAll('annotation-xml').length : -1,
+        inAnnotation: article ? article.querySelectorAll('annotation *').length : -1,
         goodLink: !!article?.querySelector('a[href="https://github.com/sungju/MarkdownLens"]'),
         highlighted: article ? article.querySelectorAll('.hljs-string, .hljs-keyword').length : 0,
         tableCells: article ? article.querySelectorAll('td').length : 0,
@@ -362,6 +364,7 @@ const PAGES = [
       ['strips framing and form elements', r.frames === 0],
       ['strips every event-handler attribute', r.handlerAttrs.length === 0],
       ['strips dangerous URL schemes', r.badHrefs.length === 0],
+      ['keeps active content out of annotations', r.annotationXml === 0 && r.inAnnotation === 0],
       ['keeps ordinary links', r.goodLink],
       ['still highlights code', r.highlighted >= 2],
       ['still renders tables', r.tableCells >= 2],
@@ -374,6 +377,76 @@ const PAGES = [
       ['reads TOML arrays and tables',
         r.frontMatterText.includes('security, sanitising') && r.frontMatterText.includes('depth: 2')],
       ['unescapes TOML strings', r.frontMatterText.includes('a "quoted" word')],
+    ],
+  },
+  {
+    // Documents are read here and then pasted elsewhere, often through a copier
+    // that keeps the formatting. Whatever the viewer turns into a link, an
+    // emoji or a formula by mistake ends up in someone's reply, and whatever it
+    // draws from source (math) has to carry that source along.
+    name: 'posting',
+    url: ({ fixture }) => `${fixture}/posting.md`,
+    settle: 3000,
+    seed: { lineNumbers: true },
+    probe: () => {
+      const article = document.querySelector('.mdl-content');
+      const text = article?.textContent ?? '';
+      const take = (node) => {
+        if (!node) return null;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const selection = getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        const taken = selection.toString();
+        selection.removeAllRanges();
+        return taken;
+      };
+      return {
+        links: [...(article?.querySelectorAll('p a[href]') ?? [])].map((a) => a.getAttribute('href')),
+        text,
+        rocket: text.includes('\u{1F680}'),
+        formulas: [...(article?.querySelectorAll('.katex annotation') ?? [])].map((n) => n.textContent.trim()),
+        strayTex: [...(article?.querySelectorAll('.katex-mathml math') ?? [])]
+          .filter((m) => [...m.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.data.trim())).length,
+        alerts: [...(article?.querySelectorAll('.mdl-admonition') ?? [])].map((box) => [
+          /mdl-admonition-(\w+)/.exec(box.className.replace(/mdl-admonition-title/g, ''))?.[1],
+          box.querySelector('.mdl-admonition-title')?.innerHTML,
+          [...box.children].slice(1).map((n) => n.textContent.trim().replace(/\s+/g, ' ')).join(' | '),
+          box.closest('li') ? 'li' : '',
+        ].join('; ')),
+        quotes: [...(article?.querySelectorAll('blockquote') ?? [])].map((q) => q.textContent.trim().replace(/\s+/g, ' ')),
+        message: article?.querySelector('.mdl-diagram-message')?.textContent ?? '',
+        diagram: take(article?.querySelector('.mdl-diagram-error')),
+        code: take(article?.querySelector('.mdl-code-block pre.has-gutter')),
+      };
+    },
+    expect: (r) => [
+      ['links addresses, not file names',
+        r.links.join(' ') === 'https://example.com/docs http://www.example.org'
+          + ' http://www.example.net/a?b=1 http://www.example.co.kr http://www.example.com.kr https://example.com/note'],
+      ['leaves emoticon-like text alone', r.text.includes('load <3, note :/ and')],
+      ['still reads emoji short names', r.rocket],
+      ['leaves dollar amounts and shell variables alone',
+        r.text.includes('$HOME/$USER cost $5 and $6. Both ${A}/${B} and x$a$y stay.'
+          + ' So do $A:$B; $C, then p$a$ q, and $PATH:/opt/$USER. Run $(uname -r)/$(uname -m),'
+          + ' $VAR1:$(pwd), echo \u201c$1\u201d or \u201c$@\u201d, rc=$?/$? and \u201c$A\u201d for \u201c5$\u201d too.')],
+      ['keeps the TeX of every formula', r.formulas.join(' / ') === 'x=\\text{\\$\'s} / E=mc^2 / n_i / \\sum_{k=1}^{n} k'],
+      ['leaves no stray TeX in the MathML', r.strayTex === 0],
+      ['draws GitHub alerts as admonitions',
+        r.alerts.join('\n') === [
+          'warning; Warning; Back up first.; ',
+          'tip; Try <em>this</em>; Second line. | item; ',
+          'note; Note; only a line; ',
+          'important; Titled; Then this.; ',
+          'tip; Titled list; a; ',
+          'caution; Caution; In a list.; li',
+        ].join('\n')],
+      ['leaves other quotes as quotes',
+        r.quotes.join(' / ') === '!NOTE is a link here / [!UNKNOWN] Plain quote. / Plain quote too. / [!NOTE] Escaped.'],
+      ['selects a broken diagram without the viewer\'s message',
+        r.message.length > 10 && r.diagram?.includes('not a diagram !!') && !r.diagram.includes(r.message)],
+      ['selects code without its line numbers', r.code?.trim() === 'echo one\necho two'],
     ],
   },
   {

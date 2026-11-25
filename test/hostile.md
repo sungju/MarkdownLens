@@ -74,6 +74,12 @@ may execute, and none of it may survive into the rendered DOM.
 
 <math><mtext><option><FAKE><img src=x onerror="window.alert('mathml')"></option></mtext></math>
 
+<math><semantics><mi>a</mi><annotation encoding="application/x-tex"><img src=x onerror="window.alert('annotation')"><b>bold</b></annotation></semantics></math>
+
+<math><semantics><mi>b</mi><annotation-xml encoding="text/html"><img src=x onerror="window.alert('annotation-xml')"><style><img title="</style><img src=x onerror=window.alert('mxss')>"></annotation-xml></semantics></math>
+
+<math><annotation encoding="text/html"><svg><style><img title="</style><img src=x onerror=window.alert('annotation-svg')>"></svg></annotation></math>
+
 ## Style injection
 
 <style>body { display: none !important; }</style>

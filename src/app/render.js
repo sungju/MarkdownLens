@@ -18,6 +18,7 @@ import { full as emoji } from 'markdown-it-emoji';
 import hljs from 'highlight.js/lib/common';
 import DOMPurify from 'dompurify';
 import { parseFrontMatter } from './frontmatter.js';
+import { githubAlerts } from './alerts.js';
 
 /** Fence languages that are rendered by something other than highlight.js. */
 const NON_CODE_FENCES = new Set([
@@ -115,10 +116,33 @@ export function createRenderer(settings) {
     highlight: (str, lang) => highlightCode(md, str, lang),
   });
 
+  // Any name ending in a country code passes for a bare host: setup.py,
+  // README.md and install.sh all became links to somebody's domain. Only
+  // written-out addresses, www. ones and e-mail addresses are linked. Not
+  // "//name" either, which starts a comment as often as an address.
+  md.linkify.set({ fuzzyLink: false });
+  md.linkify.add('//', null);
+  md.linkify.add('www.', {
+    // www.conf and /var/www.example.com are files: the name has to stand by
+    // itself, have a name between www. and its ending, and have a real ending.
+    validate: (text, pos, self) => {
+      const before = text[pos - 'www.'.length - 1];
+      if (before && !/[\s([{<>"'“‘«*_~|,;（「『【〈《]/.test(before)) return 0;
+      const host = new RegExp(`^(?:[\\p{L}\\p{N}-]+\\.)+(?:${self.re.src_tlds})(?![\\p{L}\\p{N}@_-]|\\.[\\p{L}\\p{N}])`, 'iu');
+      if (!host.test(text.slice(pos))) return 0;
+      return Math.max(0, self.testSchemaAt(`http://www.${text.slice(pos)}`, 'http:', 'http:'.length) - '//www.'.length);
+    },
+    normalize: (match) => {
+      match.url = `http://${match.url}`;
+    },
+  });
+
   md.use(deflist).use(sub).use(sup).use(mark).use(ins).use(abbr);
 
   if (settings.footnotes) md.use(footnote);
-  if (settings.emoji) md.use(emoji);
+  // Short names only. The emoticon shortcuts turned "load <3" into a heart and
+  // a lone ":/" into a face.
+  if (settings.emoji) md.use(emoji, { shortcuts: {} });
   if (settings.attrs) md.use(attrs);
   if (settings.taskLists) md.use(taskLists, { enabled: false, label: true });
 
@@ -149,6 +173,8 @@ export function createRenderer(settings) {
     });
   }
 
+  md.use(githubAlerts, ADMONITIONS);
+
   // Tables always get a wrapper so wide tables scroll instead of blowing out
   // the column width.
   md.renderer.rules.table_open = () => '<div class="mdl-table-wrap"><table>';
@@ -159,7 +185,11 @@ export function createRenderer(settings) {
 
 const PURIFY_CONFIG = {
   USE_PROFILES: { html: true, svg: true, svgFilters: true, mathMl: true },
-  ADD_TAGS: ['iframe-placeholder'],
+  // KaTeX keeps each formula's TeX in an annotation. Without these two the tag
+  // was removed but not its text, which a screen reader then read after the
+  // formula and no copier could tell from it. <annotation-xml> stays out: it
+  // can hold HTML, and with it a mutation that gets past the sanitiser.
+  ADD_TAGS: ['iframe-placeholder', 'semantics', 'annotation'],
   ADD_ATTR: ['target', 'rel', 'allowfullscreen', 'frameborder', 'start', 'reversed', 'align'],
   FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'base', 'form'],
   FORBID_ATTR: ['srcdoc', 'formaction', 'ping'],
