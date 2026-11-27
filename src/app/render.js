@@ -76,6 +76,39 @@ function slugify(text) {
     .replace(/^-|-$/g, '') || 'section';
 }
 
+/**
+ * Languages an untagged block may be guessed as. Auto-detection across every
+ * registered language is slow and wild: short prose came back as CSS, a file
+ * tree as Makefile. These are the ones READMEs actually leave untagged, and
+ * each has enough distinctive syntax to be told apart from plain text.
+ */
+const GUESSABLE = [
+  'json', 'yaml', 'python', 'javascript', 'typescript', 'go', 'rust', 'java',
+  'c', 'cpp', 'csharp', 'ruby', 'php', 'sql', 'xml', 'swift', 'kotlin', 'diff',
+];
+
+/**
+ * Below this relevance a guess is noise. Measured: real snippets of the
+ * languages above scored 3 to 9, while prose, log lines and key = value pairs
+ * scored 2 or less.
+ */
+const MIN_GUESS_RELEVANCE = 3;
+
+/**
+ * Shell commands score too low for the relevance floor (an `npm install` line
+ * gets 1), yet they are the most common untagged block in a README. A block
+ * whose first line is a prompt or a well-known command is taken as shell.
+ */
+const SHELL_LINE = /^\s*(?:[$#%] |(?:sudo|npm|npx|pnpm|yarn|bun|node|deno|git|gh|cd|ls|mkdir|rm|cp|mv|cat|echo|export|source|curl|wget|brew|apt|apt-get|dnf|yum|pip3?|pipx|python3?|uv|poetry|cargo|rustup|go|make|cmake|docker|kubectl|helm|ssh|scp|chmod|chown|tar|unzip|swift|xcodebuild|gem|bundle|composer|dotnet|java|mvn|gradle|\.\/[\w.-]+)(?:\s|$))/;
+
+function guessLanguage(str) {
+  const first = str.split('\n').find((line) => line.trim()) || '';
+  if (SHELL_LINE.test(first)) return 'bash';
+  const subset = GUESSABLE.filter((name) => hljs.getLanguage(name));
+  const result = hljs.highlightAuto(str, subset);
+  return result.language && result.relevance >= MIN_GUESS_RELEVANCE ? result.language : '';
+}
+
 function highlightCode(md, str, lang) {
   const language = (lang || '').trim().toLowerCase();
 
@@ -84,13 +117,19 @@ function highlightCode(md, str, lang) {
     return `<pre class="mdl-code"><code class="${cls}">${md.utils.escapeHtml(str)}</code></pre>`;
   }
 
+  // An untagged block, or one tagged with a language highlight.js does not
+  // know, gets a guess. The guess colours the code but is not shown as the
+  // block's label: a wrong label reads as a claim, a wrong colour does not.
+  const known = language && hljs.getLanguage(language);
+  const target = known ? language : guessLanguage(str);
+
   let body;
   let resolved = '';
-  if (language && hljs.getLanguage(language)) {
+  if (target) {
     try {
-      const result = hljs.highlight(str, { language, ignoreIllegals: true });
+      const result = hljs.highlight(str, { language: target, ignoreIllegals: true });
       body = result.value;
-      resolved = result.language || language;
+      resolved = result.language || target;
     } catch {
       body = md.utils.escapeHtml(str);
     }
@@ -98,9 +137,10 @@ function highlightCode(md, str, lang) {
     body = md.utils.escapeHtml(str);
   }
 
-  const label = resolved || language;
+  const label = known ? resolved || language : language;
+  const classLang = resolved || language;
   const attr = label ? ` data-lang="${md.utils.escapeHtml(label)}"` : '';
-  const codeClass = `hljs${label ? ` language-${md.utils.escapeHtml(label)}` : ''}`;
+  const codeClass = `hljs${classLang ? ` language-${md.utils.escapeHtml(classLang)}` : ''}`;
   return `<pre class="mdl-code"${attr}><code class="${codeClass}">${body}</code></pre>`;
 }
 
@@ -174,6 +214,10 @@ export function createRenderer(settings) {
   }
 
   md.use(githubAlerts, ADMONITIONS);
+
+  // Indented code blocks bypass the highlight option in markdown-it, so they
+  // came out as bare <pre> with no colours, copy button or code styling.
+  md.renderer.rules.code_block = (tokens, idx) => `${highlightCode(md, tokens[idx].content, '')}\n`;
 
   // Tables always get a wrapper so wide tables scroll instead of blowing out
   // the column width.

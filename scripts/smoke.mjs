@@ -312,6 +312,34 @@ const PAGES = [
     ],
   },
   {
+    // Code is still code when its author leaves off the language. Untagged
+    // fences and indented blocks once came out uncoloured, and indented ones
+    // missed the code styling and Copy button too.
+    name: 'untagged-code',
+    url: ({ fixture }) => `${fixture}/untagged.md`,
+    settle: 2500,
+    probe: () => {
+      const blocks = [...document.querySelectorAll('.mdl-content pre')];
+      return blocks.map((pre) => ({
+        styled: pre.classList.contains('mdl-code') && !!pre.closest('.mdl-code-block'),
+        tokens: pre.querySelectorAll('[class^="hljs-"]').length,
+        code: pre.querySelector('code')?.className || '',
+        label: pre.closest('.mdl-code-block')?.querySelector('.mdl-code-lang')?.textContent || '',
+      }));
+    },
+    expect: (r) => [
+      ['renders all five blocks', r.length === 5],
+      ['colours untagged shell commands', r[0]?.tokens >= 1 && r[0]?.code.includes('language-bash')],
+      ['colours untagged JSON', r[1]?.tokens >= 3 && r[1]?.code.includes('language-json')],
+      ['colours an indented block', r[2]?.tokens >= 3 && r[2]?.code.includes('language-python')],
+      ['gives an indented block the code styling', r[2]?.styled],
+      ['leaves plain output uncoloured', r[3]?.tokens === 0],
+      ['colours a block tagged with an unknown language', r[4]?.tokens >= 3],
+      ['labels a guessed block with nothing', r[0]?.label === '' && r[1]?.label === '' && r[2]?.label === ''],
+      ['keeps the author\'s unknown tag as the label', r[4]?.label.toLowerCase() === 'frobnicate'],
+    ],
+  },
+  {
     // A Markdown file is untrusted input: it arrives from the web and renders
     // into a page the extension controls. Nothing in test/hostile.md may
     // execute, and none of it may survive into the DOM.
