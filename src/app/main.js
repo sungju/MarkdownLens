@@ -5,13 +5,14 @@
 
 import { getSettings, setSettings, onSettingsChanged } from '../common/settings.js';
 import { THEMES_BY_ID, FONT_STACKS } from '../common/themes.js';
-import { applyAppearance, installBaseStyles, installMathStyles, onSchemeChange, prefersDark } from './theming.js';
+import { applyAppearance, installBaseStyles, ZOOM_MIN, ZOOM_MAX, installMathStyles, onSchemeChange, prefersDark } from './theming.js';
 import { renderMarkdown, highlightSource } from './render.js';
 import { buildShell } from './shell.js';
 import { buildToc } from './toc.js';
 import { enhance } from './enhance.js';
 import { formatValue } from './frontmatter.js';
 import { createWatcher } from './watch.js';
+import { createTranslation, translationAvailable } from './translate.js';
 import { extensionAlive, guard } from '../common/runtime.js';
 
 const state = {
@@ -27,6 +28,7 @@ const state = {
   watchEnabled: true,
   onRequestOpen: null,
   previewRestore: null,
+  translation: null,
 };
 
 /**
@@ -57,6 +59,9 @@ export async function boot(context) {
       toggleRaw: () => toggleRaw(),
       reload: () => (state.onRequestOpen ? state.onRequestOpen() : reloadFromDisk()),
       openSettings: () => guard(() => chrome.runtime.sendMessage({ type: 'open-options' })),
+      zoom: (direction) => zoom(direction),
+      canTranslate: translationAvailable(),
+      translate: (lang) => state.translation?.setLanguage(lang),
       setTheme: (id) => setSettings({ theme: id }),
       setCodeTheme: (id) => setSettings({ codeTheme: id }),
       previewCodeTheme: (id) => previewCodeTheme(id),
@@ -65,6 +70,14 @@ export async function boot(context) {
 
   document.body.appendChild(state.shell.root);
   applyAll();
+
+  if (translationAvailable()) {
+    state.translation = createTranslation(state.shell.article, {
+      onStatus: (status) => state.shell.setTranslateStatus(status),
+      // Headings change language too, and the outline is built from them.
+      onApplied: () => refreshOutline(),
+    });
+  }
 
   await renderDocument();
 
@@ -140,6 +153,11 @@ function applyAll() {
   state.shell.setOutlineEnabled(state.settings.toc);
   state.shell.setOutline(state.settings.toc && !state.settings.tocCollapsed);
   state.shell.setScheme(theme.scheme);
+  const level = currentZoom();
+  state.shell.setZoom(level, {
+    canZoomOut: ZOOM_STEPS.some((step) => step < level - 0.001),
+    canZoomIn: ZOOM_STEPS.some((step) => step > level + 0.001),
+  });
   state.shell.menus.themeMenu.sync(state.settings);
   state.shell.menus.codeMenu.sync(state.settings);
   document.documentElement.classList.toggle('mdl-toc-disabled', !state.settings.toc);
@@ -188,6 +206,9 @@ async function renderDocument({ keepScroll = false } = {}) {
   else scrollToHash();
 
   if (state.rawMode) await showRaw(true);
+
+  // Not awaited: the page is readable in the original while it translates.
+  state.translation?.rerendered();
 }
 
 function renderFrontMatter({ frontMatter, frontMatterRaw }) {
@@ -267,6 +288,37 @@ function toggleOutline(force) {
   if (!state.settings.toc) return;
   const open = force ?? state.settings.tocCollapsed;
   setSettings({ tocCollapsed: !open });
+}
+
+/*
+ * The same stops Chrome's own zoom uses, so the two feel alike. Snapping to
+ * the next stop rather than adding a fixed amount also means a level that
+ * arrives from elsewhere (another device, an older value) lands back on the
+ * ladder after one press.
+ */
+const ZOOM_STEPS = [0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3]
+  .filter((step) => step >= ZOOM_MIN && step <= ZOOM_MAX);
+
+function currentZoom() {
+  const level = Number(state.settings.zoom);
+  return Number.isFinite(level) ? Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, level)) : 1;
+}
+
+/** One stop in or out, or back to 100% for a direction of 0. */
+function zoom(direction) {
+  const level = currentZoom();
+  let next = 1;
+  if (direction > 0) next = ZOOM_STEPS.find((step) => step > level + 0.001) ?? level;
+  else if (direction < 0) next = ZOOM_STEPS.findLast((step) => step < level - 0.001) ?? level;
+  if (next === level) return;
+
+  // Keep the line at the top of the window where it is. Zooming changes the
+  // height of everything above it, so the scroll offset alone would drift.
+  const anchor = window.scrollY * (next / level);
+  setSettings({ zoom: next });
+  state.settings = { ...state.settings, zoom: next };
+  applyAll();
+  window.scrollTo({ top: anchor });
 }
 
 function toggleScheme() {
@@ -408,6 +460,9 @@ function installKeyboardShortcuts() {
       case 'r': toggleRaw(); break;
       case 'd': toggleScheme(); break;
       case 'p': if (!event.shiftKey) return; window.print(); break;
+      case '+': case '=': zoom(1); break;
+      case '-': case '_': zoom(-1); break;
+      case '0': zoom(0); break;
       case 'g': window.scrollTo({ top: 0, behavior: 'smooth' }); break;
       case 'G': window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); break;
       default: return;

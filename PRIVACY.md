@@ -1,6 +1,6 @@
 # Privacy Policy — Markdown Lens
 
-_Last updated: 24 November 2026_
+_Last updated: 27 November 2026_
 
 Markdown Lens is a personal project by Sungju Kwon. It does not collect,
 transmit, sell or share any data. There is no analytics, no telemetry, no crash
@@ -48,6 +48,18 @@ address your browser already loaded it from, and only in two cases:
   re-read on a timer.
 
 No cookies or credentials are sent with these requests.
+
+## Translation
+
+The **Translate** list box in the toolbar uses the translator built into
+Chrome, which runs on your computer. The document's text is translated there
+and is not sent to Google, to the developer or to anyone else.
+
+The first time you translate into a language, Chrome itself downloads that
+language pack (and, once, a small language-detection model) from Google, the
+same way it downloads its own components. The extension asks for nothing
+else: it does not choose the server, and no document text goes with the
+download. Nothing is translated until you pick a language.
 
 ## Children
 

@@ -35,7 +35,7 @@ at is the file on GitHub, then work through `UPLOAD.md` in the folder
 
 ## Testing discipline
 
-`npm test` is the whole suite: 167 checks across 20 lanes. Three run in
+`npm test` is the whole suite: 211 checks across 31 lanes. Three run in
 Node before Chrome starts (`store-readiness`, `live-reload-scope`,
 `orphaned-context`); the rest drive a headless Chrome over the DevTools protocol.
 
@@ -150,6 +150,20 @@ copied into a ticket, so text that would be wrong there is wrong here too:
   `test/hostile.md` covers both.
 - What the viewer adds around the text (line numbers, the outline, labels, the
   diagram error) is `user-select: none`, so a copy leaves it behind.
+
+**Translation is Chrome's on-device Translator API, nothing else.** The
+listing and `PRIVACY.md` promise that no document text leaves the browser, so
+a translation service is out. The list box appears only where `Translator`
+exists (Chrome 138+, secure contexts), so `minimum_chrome_version` stays 128.
+Code, inline code, math, diagrams and heading anchors are never translated.
+A block whose only markup is emphasis is translated as one sentence and loses
+the emphasis; anything with links or code goes run by run, which keeps the
+markup but translates in fragments. Chrome refuses a model download once the
+click that asked for it is more than a few seconds old, and on a first use
+the language detector's own download outlasts it, so the refusal shows a
+Continue button rather than an error. The smoke lanes use a fake translator
+(real models would have to be downloaded); the real path was checked by hand
+in headless Chrome 159, English to Korean.
 
 **GitHub alerts share the admonition boxes.** `> [!NOTE]` is how most Markdown
 now writes one, and without it the marker showed up as text in a quote. A line

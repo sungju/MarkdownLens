@@ -10,6 +10,9 @@ import { FONT_STACKS, resolveTheme, resolveCodeTheme } from '../common/themes.js
 import { CODE_THEMES_BY_ID } from '../generated/hljs-themes.js';
 import { guardSync } from '../common/runtime.js';
 
+export const ZOOM_MIN = 0.5;
+export const ZOOM_MAX = 3;
+
 const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 function asset(path) {
@@ -87,6 +90,7 @@ export function applyAppearance(settings, { head = document.head, root = documen
   style.setProperty('--mdl-line-height', String(clamp(settings.lineHeight, 1.2, 2.4)));
   style.setProperty('--mdl-content-width', `${clamp(settings.contentWidth, 480, 2000)}px`);
   style.setProperty('--mdl-para-spacing', String(clamp(settings.paragraphSpacing, 0.4, 2.5)));
+  style.setProperty('--mdl-zoom', String(clamp(settings.zoom, ZOOM_MIN, ZOOM_MAX)));
 
   root.classList.toggle('mdl-wrap-code', Boolean(settings.wrapCode));
   root.classList.toggle('mdl-line-numbers', Boolean(settings.lineNumbers));

@@ -177,6 +177,41 @@ function isDark(colour) {
  * Each probe runs in the page and returns a plain object; the matching
  * `expect` turns it into pass/fail lines.
  */
+/*
+ * Stands in for Chrome's on-device models, which a test profile would have to
+ * download first. The real API's shape, with a translation anyone can spot.
+ */
+function fakeTranslator() {
+  class FakeDetector {
+    static async availability() { return 'available'; }
+    static async create() { return new FakeDetector(); }
+    async detect() { return [{ detectedLanguage: 'en', confidence: window.__unsure ? 0.2 : 0.99 }]; }
+  }
+  class FakeTranslator {
+    static async availability({ targetLanguage }) { return targetLanguage === 'sv' ? 'unavailable' : 'available'; }
+    static async create(options) {
+      // The first download is refused the way Chrome refuses one whose
+      // click has expired, when a test asks for that.
+      if (window.__refuseOnce) {
+        window.__refuseOnce = false;
+        throw new DOMException('Requires a user gesture', 'NotAllowedError');
+      }
+      return Object.assign(new FakeTranslator(), { options });
+    }
+    async translate(text) {
+      if (window.__slow) await new Promise((resolve) => setTimeout(resolve, 20));
+      return `«${this.options.targetLanguage}» ${text}`;
+    }
+  }
+  Object.defineProperty(window, 'Translator', { value: FakeTranslator, configurable: true, writable: true });
+  Object.defineProperty(window, 'LanguageDetector', { value: FakeDetector, configurable: true, writable: true });
+}
+
+const chooseLanguage = (code) => ({
+  expression: `(() => { const s = document.querySelector('.mdl-translate-select'); s.value = ${JSON.stringify(code)}; s.dispatchEvent(new Event('change')); })()`,
+  wait: 1200,
+});
+
 const PAGES = [
   {
     name: 'content-script',
@@ -208,6 +243,7 @@ const PAGES = [
       theme: document.documentElement.dataset.mdlTheme,
       codeThemeHref: document.getElementById('mdl-css-code')?.getAttribute('href') || '',
       rawScript: !!document.querySelector('body > pre'),
+      translateBox: !!document.querySelector('.mdl-toolbar select.mdl-translate-select'),
       visibility: getComputedStyle(document.documentElement).visibility,
       prebootStyle: !!document.getElementById('mdl-preboot-hide'),
       firstHeadingBox: (() => {
@@ -277,6 +313,8 @@ const PAGES = [
       ['lays the content out', (r.firstHeadingBox?.w ?? 0) > 200 && (r.firstHeadingBox?.h ?? 0) > 20],
       ['uses the document title', r.title.includes('A tour of Markdown Lens')],
       ['replaces the plain-text source', !r.rawScript],
+      // Chrome's on-device Translator API reaches the content script's world.
+      ['offers the translate list box', r.translateBox],
       ['applies a document theme', !!r.theme],
       ['loads a code theme stylesheet', r.codeThemeHref.startsWith('chrome-extension://') && r.codeThemeHref.includes('/hljs/')],
       ['builds the outline', r.outline >= 8],
@@ -533,6 +571,236 @@ const PAGES = [
       ['starts without an outline', !r.toc],
       ['starts without an outline button', !r.outlineButton],
       ['gives the text the full width', r.mainOffset === 0],
+    ],
+  },
+  {
+    // Picking a language translates the prose in place and nothing else:
+    // code, inline code and math stay exactly as written.
+    name: 'translate',
+    url: ({ ext }) => `${ext}/viewer.html?sample=1`,
+    settle: 2500,
+    seed: { toc: true },
+    preload: fakeTranslator,
+    actions: [
+      { expression: `document.querySelector('.mdl-content').insertAdjacentHTML('beforeend', '<p id="t-em">A <strong>fast</strong>, themeable viewer.</p>')`, wait: 100 },
+      chooseLanguage('ko'),
+    ],
+    probe: () => {
+      const article = document.querySelector('.mdl-content');
+      const marked = (sel) => [...article.querySelectorAll(sel)].some((n) => n.textContent.includes('«'));
+      return {
+        paragraph: article.querySelector('p')?.textContent || '',
+        // The sample's first paragraph holds inline code, so it goes run by run.
+        fragments: (article.querySelector('p')?.textContent.match(/«ko»/g) || []).length,
+        emphasis: document.getElementById('t-em')?.textContent || '',
+        heading: article.querySelector('h1, h2')?.textContent || '',
+        code: marked('pre, code'),
+        codeCount: article.querySelectorAll('code').length,
+        outline: [...document.querySelectorAll('.mdl-toc-link')].some((a) => a.textContent.includes('«ko»')),
+        lang: article.getAttribute('lang'),
+        // The nearest lang, not any: the page itself says lang="en".
+        codeLang: [...article.querySelectorAll('pre')].every((pre) => pre.closest('[lang]')?.getAttribute('lang') === 'en'),
+        status: document.querySelector('.mdl-translate-status')?.textContent,
+        retryShown: getComputedStyle(document.querySelector('.mdl-translate-retry')).display !== 'none',
+      };
+    },
+    expect: (r) => [
+      ['translates the prose', r.paragraph.includes('«ko»')],
+      ['translates a sentence with only emphasis in one piece',
+        r.emphasis === '«ko» A fast, themeable viewer.'],
+      ['goes run by run around code', r.fragments >= 2],
+      ['translates headings', r.heading.includes('«ko»')],
+      ['leaves code as written', r.codeCount > 0 && !r.code],
+      ['translates the outline with the headings', r.outline],
+      ['marks the article with its new language', r.lang === 'ko'],
+      ['keeps code marked as the source language', r.codeLang],
+      ['finishes without a message', r.status === ''],
+      ['shows no Continue button', !r.retryShown],
+    ],
+  },
+  {
+    // "Original" puts back exactly what was there.
+    name: 'translate-restore',
+    url: ({ ext }) => `${ext}/viewer.html?sample=1`,
+    settle: 2500,
+    preload: fakeTranslator,
+    actions: [
+      { expression: `window.__before = document.querySelector('.mdl-content').innerHTML`, wait: 100 },
+      chooseLanguage('ja'),
+      chooseLanguage(''),
+    ],
+    probe: () => ({
+      same: document.querySelector('.mdl-content').innerHTML === window.__before,
+      lang: document.querySelector('.mdl-content').hasAttribute('lang'),
+    }),
+    expect: (r) => [
+      ['restores the original exactly', r.same],
+      ['drops the language mark', !r.lang],
+    ],
+  },
+  {
+    // On a first use Chrome refuses the download once the click has expired.
+    // The Continue button is the fresh click that finishes it.
+    name: 'translate-continue',
+    url: ({ ext }) => `${ext}/viewer.html?sample=1`,
+    settle: 2500,
+    preload: fakeTranslator,
+    actions: [
+      { expression: `window.__refuseOnce = true`, wait: 100 },
+      chooseLanguage('fr'),
+      { expression: `window.__offered = getComputedStyle(document.querySelector('.mdl-translate-retry')).display !== 'none'`, wait: 100 },
+      { expression: `document.querySelector('.mdl-translate-retry').click()`, wait: 1200 },
+    ],
+    probe: () => ({
+      offered: window.__offered,
+      // Rendered, not the property: .mdl-btn's display once overrode [hidden].
+      hiddenAfter: getComputedStyle(document.querySelector('.mdl-translate-retry')).display === 'none',
+      translated: document.querySelector('.mdl-content p')?.textContent.includes('«fr»'),
+    }),
+    expect: (r) => [
+      ['offers Continue when the download is refused', r.offered === true],
+      ['translates after Continue', r.translated],
+      ['puts the button away again', r.hiddenAfter],
+    ],
+  },
+  {
+    // Switching language while a translation is still running: nothing of
+    // the abandoned language may be left behind.
+    name: 'translate-switch',
+    url: ({ ext }) => `${ext}/viewer.html?sample=1`,
+    settle: 2500,
+    preload: fakeTranslator,
+    actions: [
+      { expression: `window.__slow = true`, wait: 50 },
+      { ...chooseLanguage('ko'), wait: 150 },
+      { ...chooseLanguage('fr'), wait: 3000 },
+    ],
+    probe: () => {
+      const text = document.querySelector('.mdl-content').textContent;
+      return { ko: text.includes('«ko»'), fr: text.includes('«fr»'), lang: document.querySelector('.mdl-content').getAttribute('lang') };
+    },
+    expect: (r) => [
+      ['leaves nothing of the abandoned language', !r.ko],
+      ['finishes the new one', r.fr && r.lang === 'fr'],
+    ],
+  },
+  {
+    // A language it cannot identify is reported, not guessed as English.
+    name: 'translate-undetected',
+    url: ({ ext }) => `${ext}/viewer.html?sample=1`,
+    settle: 2500,
+    preload: fakeTranslator,
+    actions: [{ expression: `window.__unsure = true`, wait: 50 }, chooseLanguage('en')],
+    probe: () => ({
+      status: document.querySelector('.mdl-translate-status')?.textContent || '',
+      marked: document.querySelector('.mdl-content').textContent.includes('«'),
+    }),
+    expect: (r) => [
+      ['says it could not tell the language', r.status === "Couldn't tell what language this is in"],
+      ['leaves the text untouched', !r.marked],
+    ],
+  },
+  {
+    // A pair Chrome cannot do says so and leaves the text alone.
+    name: 'translate-unsupported',
+    url: ({ ext }) => `${ext}/viewer.html?sample=1`,
+    settle: 2500,
+    preload: fakeTranslator,
+    actions: [chooseLanguage('sv')],
+    probe: () => ({
+      status: document.querySelector('.mdl-translate-status')?.textContent || '',
+      state: document.querySelector('.mdl-translate')?.dataset.state,
+      value: document.querySelector('.mdl-translate-select')?.value,
+      marked: document.querySelector('.mdl-content').textContent.includes('«'),
+    }),
+    expect: (r) => [
+      ['explains the pair is unsupported', r.status === "Chrome can't translate English to Swedish"],
+      ['shows it as an error', r.state === 'error'],
+      ['puts the list box back on Original', r.value === ''],
+      ['leaves the text untouched', !r.marked],
+    ],
+  },
+  {
+    // Chrome without the API (older, or a page that is not a secure context)
+    // gets no list box at all rather than one that cannot work.
+    name: 'translate-missing',
+    url: ({ ext }) => `${ext}/viewer.html?sample=1`,
+    settle: 2500,
+    preload: () => { delete window.Translator; delete window.LanguageDetector; },
+    probe: () => ({
+      booted: !!document.querySelector('.mdl-root .mdl-content p'),
+      box: !!document.querySelector('.mdl-translate'),
+    }),
+    expect: (r) => [
+      ['still renders the document', r.booted],
+      ['offers no list box', !r.box],
+    ],
+  },
+  {
+    // The toolbar's zoom buttons, pressed for real. Two presses from 100%
+    // walk Chrome's stops to 125%, and the page reflows rather than scaling:
+    // a magnified page must still fit the window.
+    name: 'zoom',
+    url: ({ fixture }) => `${fixture}/fixture.md`,
+    settle: 2500,
+    clicks: [
+      '.mdl-toolbar button[aria-label="Zoom in"]',
+      '.mdl-toolbar button[aria-label="Zoom in"]',
+    ],
+    probe: () => {
+      const page = document.querySelector('.mdl-page');
+      const level = document.querySelector('.mdl-zoom-level');
+      return {
+        zoom: page ? getComputedStyle(page).zoom : '',
+        label: level?.textContent || '',
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        toolbarZoom: getComputedStyle(document.querySelector('.mdl-toolbar')).zoom,
+      };
+    },
+    expect: (r) => [
+      ['zooms the document in by two stops', r.zoom === '1.25'],
+      ['shows the level on the reset button', r.label === '125%'],
+      ['leaves the toolbar its own size', r.toolbarZoom === '1'],
+      ['still fits the window', r.overflow <= 0],
+    ],
+  },
+  {
+    // A stored level is applied on load, and the keys step from it: + to
+    // 175%, 0 back to 100%, - to 90%.
+    name: 'zoom-keys',
+    url: ({ fixture }) => `${fixture}/fixture.md`,
+    settle: 2500,
+    seed: { zoom: 1.5 },
+    // Dispatched in the page: + and - have no Key* code for the input
+    // pipeline's key events to carry.
+    actions: ['+', '0', '-'].map((key) => ({
+      expression: `document.body.dispatchEvent(new KeyboardEvent('keydown', { key: ${JSON.stringify(key)}, bubbles: true }))`,
+      wait: 700,
+    })),
+    probe: () => ({
+      zoom: getComputedStyle(document.querySelector('.mdl-page')).zoom,
+      label: document.querySelector('.mdl-zoom-level')?.textContent || '',
+    }),
+    expect: (r) => [
+      ['steps through the stops from the stored level', r.zoom === '0.9'],
+      ['shows the level on the reset button', r.label === '90%'],
+    ],
+  },
+  {
+    // At the top stop there is nowhere further to go, and the button says so.
+    name: 'zoom-limit',
+    url: ({ fixture }) => `${fixture}/fixture.md`,
+    settle: 2500,
+    seed: { zoom: 3 },
+    probe: () => ({
+      zoom: getComputedStyle(document.querySelector('.mdl-page')).zoom,
+      zoomIn: document.querySelector('.mdl-toolbar button[aria-label="Zoom in"]')?.disabled,
+      zoomOut: document.querySelector('.mdl-toolbar button[aria-label="Zoom out"]')?.disabled,
+    }),
+    expect: (r) => [
+      ['applies the stored level on load', r.zoom === '3'],
+      ['disables zooming in past the last stop', r.zoomIn === true],
+      ['still allows zooming out', r.zoomOut === false],
     ],
   },
   {
@@ -1342,7 +1610,10 @@ async function main() {
 
     console.log(`Markdown Lens — smoke test (${version.product})\n`);
 
-    for (const page of PAGES) {
+    // SMOKE_ONLY=zoom,viewer runs just those browser lanes, for quick
+    // iteration. A full run is still what counts.
+    const only = process.env.SMOKE_ONLY?.split(',').map((name) => name.trim()).filter(Boolean);
+    for (const page of only?.length ? PAGES.filter((p) => only.includes(p.name)) : PAGES) {
       await resetStorage(client, urls.ext);
       if (page.seed) await seedSettings(client, urls.ext, page.seed);
       if (page.permissions) {

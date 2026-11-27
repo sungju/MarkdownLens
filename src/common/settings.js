@@ -33,6 +33,9 @@ export const DEFAULTS = {
   lineHeight: 1.7,
   contentWidth: 860,
   paragraphSpacing: 1,
+  // Magnification of the document itself, set from the toolbar. Unlike the
+  // font size it scales images, tables and diagrams along with the text.
+  zoom: 1,
 
   // Layout. The outline is opt-in: the page is the document alone until the
   // reader asks for more.

@@ -16,6 +16,9 @@ export const ICONS = {
   top: svg('<path d="M8 13V3.5M3.75 7.75 8 3.5l4.25 4.25"/>'),
   check: svg('<path d="M3 8.5 6.25 12 13 4.5"/>'),
   close: svg('<path d="m4 4 8 8M12 4l-8 8"/>'),
+  zoomIn: svg('<circle cx="7" cy="7" r="4.75"/><path d="m10.5 10.5 3.25 3.25M5 7h4M7 5v4"/>'),
+  zoomOut: svg('<circle cx="7" cy="7" r="4.75"/><path d="m10.5 10.5 3.25 3.25M5 7h4"/>'),
+  translate: svg('<path d="M2 3.5h6M5 2v1.5M3.5 3.5c.4 2 1.9 3.6 3.5 4.25M6.5 3.5C6.1 5.6 4.6 7.2 2.5 8"/><path d="m8 14 2.75-6.5L13.5 14M9 11.75h3.5"/>'),
   search: svg('<circle cx="7" cy="7" r="4.25"/><path d="m10.2 10.2 3.3 3.3"/>'),
   reload: svg('<path d="M13.5 8a5.5 5.5 0 1 1-1.7-3.97"/><path d="M13.6 2.5v3.2h-3.2"/>'),
 };

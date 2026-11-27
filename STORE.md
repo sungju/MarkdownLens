@@ -59,12 +59,15 @@ name; `npm run store-kit` now refuses copy with long comma-separated runs.
 > • A reading-progress bar, a copy button on every code block and optional
 >   line numbers.
 > • A source view that shows the original Markdown with syntax colouring.
+> • Read a document in another language with the translator built into
+>   Chrome. It runs on your computer, and code and formulas stay as written.
 > • Your place in each document is remembered, and pages print cleanly.
 >
 > PRIVATE BY DESIGN
 > Markdown Lens never sends your documents anywhere and downloads no code.
-> Everything it needs is inside the extension. Nothing about you is collected,
-> and there is no account to create.
+> Everything it needs is inside the extension. Translation runs on your
+> computer too; Chrome fetches a language pack the first time you use one.
+> Nothing about you is collected, and there is no account to create.
 >
 > Editing a file on a local server? It refreshes as you save. Documents on
 > other sites are only re-read when you press Reload.

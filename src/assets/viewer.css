@@ -62,6 +62,10 @@ html.mdl-host :focus-visible {
   max-width: var(--mdl-content-width, 860px);
   margin: 0 auto;
   padding: 32px 28px 96px;
+  /* CSS zoom rather than a transform: it reflows, so a magnified page still
+     wraps to the window instead of running off its right edge, and images
+     and diagrams grow with the text. */
+  zoom: var(--mdl-zoom, 1);
 }
 
 /*
@@ -138,6 +142,46 @@ html.mdl-host :focus-visible {
 .mdl-btn.is-active,
 .mdl-btn[aria-pressed='true'] { background: var(--mdl-code-bg); color: var(--mdl-accent); }
 .mdl-btn svg { flex: none; }
+.mdl-btn:disabled { opacity: 0.4; cursor: default; background: transparent; color: var(--mdl-fg-muted); }
+.mdl-zoom { margin-right: 6px; }
+
+.mdl-translate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 6px;
+  color: var(--mdl-fg-muted);
+}
+.mdl-translate-select {
+  height: 30px;
+  max-width: 13em;
+  padding: 0 6px;
+  border: 1px solid var(--mdl-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mdl-fg);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.mdl-translate-select option { background: var(--mdl-bg); color: var(--mdl-fg); }
+.mdl-translate-status {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mdl-translate-status:empty { display: none; }
+/* .mdl-btn sets display, which would otherwise win over [hidden]. */
+.mdl-translate-retry[hidden] { display: none; }
+.mdl-translate-retry {
+  border: 1px solid var(--mdl-accent);
+  color: var(--mdl-accent);
+}
+.mdl-translate[data-state='error'] .mdl-translate-status { color: var(--mdl-c-danger); }
+.mdl-zoom-level {
+  min-width: 3.4em;
+  font-variant-numeric: tabular-nums;
+}
 .mdl-btn-label {
   position: absolute;
   width: 1px; height: 1px;
@@ -850,7 +894,7 @@ pre.mdl-code.has-gutter {
   .mdl-toast { display: none !important; }
 
   .mdl-toc-open .mdl-main { margin-left: 0; }
-  .mdl-page { max-width: none; padding: 0; }
+  .mdl-page { max-width: none; padding: 0; zoom: 1; }
 
   .mdl-content h1,
   .mdl-content h2,

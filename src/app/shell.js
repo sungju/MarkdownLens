@@ -6,6 +6,7 @@
 import { ICONS } from './icons.js';
 import { THEMES } from '../common/themes.js';
 import { CODE_THEMES } from '../generated/hljs-themes.js';
+import { TARGET_LANGUAGES, languageLabel } from './translate.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -51,6 +52,41 @@ export function buildShell({ actions }) {
   const outlineBtn = iconButton('outline', 'Outline', { pressed: true });
   toolbarLeft.append(outlineBtn);
 
+  const zoomOutBtn = iconButton('zoomOut', 'Zoom out');
+  // The reset button shows the current level, which is also what tells a
+  // reader the page is magnified at all.
+  const zoomResetBtn = el('button', 'mdl-btn mdl-zoom-level', '100%');
+  zoomResetBtn.type = 'button';
+  zoomResetBtn.title = 'Reset zoom';
+  zoomResetBtn.setAttribute('aria-label', 'Reset zoom');
+  const zoomInBtn = iconButton('zoomIn', 'Zoom in');
+  const zoomGroup = el('div', 'mdl-toolbar-group mdl-zoom');
+  zoomGroup.setAttribute('role', 'group');
+  zoomGroup.setAttribute('aria-label', 'Zoom');
+  zoomGroup.append(zoomOutBtn, zoomResetBtn, zoomInBtn);
+
+  // A native list box: it is keyboard- and screen-reader-friendly for free,
+  // and twenty-odd languages is what a select is for.
+  const translateWrap = el('label', 'mdl-translate');
+  translateWrap.title = 'Translate';
+  translateWrap.innerHTML = ICONS.translate;
+  const translateSelect = el('select', 'mdl-translate-select');
+  translateSelect.setAttribute('aria-label', 'Translate');
+  const originalOption = el('option', null, 'Original');
+  originalOption.value = '';
+  translateSelect.append(originalOption);
+  for (const code of TARGET_LANGUAGES) {
+    const option = el('option', null, languageLabel(code));
+    option.value = code;
+    translateSelect.append(option);
+  }
+  const translateStatus = el('span', 'mdl-translate-status');
+  translateStatus.setAttribute('role', 'status');
+  const translateRetry = el('button', 'mdl-btn mdl-translate-retry', 'Continue');
+  translateRetry.type = 'button';
+  translateRetry.hidden = true;
+  translateWrap.append(translateSelect, translateStatus, translateRetry);
+
   const themeBtn = iconButton('palette', 'Theme');
   const codeBtn = iconButton('code', 'Code theme');
   const schemeBtn = iconButton('moon', 'Toggle dark mode');
@@ -58,7 +94,8 @@ export function buildShell({ actions }) {
   const reloadBtn = iconButton('reload', 'Reload');
   const printBtn = iconButton('print', 'Print');
   const settingsBtn = iconButton('settings', 'Settings');
-  toolbarRight.append(themeBtn, codeBtn, schemeBtn, rawBtn, reloadBtn, printBtn, settingsBtn);
+  if (actions.canTranslate) toolbarRight.append(translateWrap);
+  toolbarRight.append(zoomGroup, themeBtn, codeBtn, schemeBtn, rawBtn, reloadBtn, printBtn, settingsBtn);
 
   toolbar.append(toolbarLeft, toolbarRight);
 
@@ -92,6 +129,11 @@ export function buildShell({ actions }) {
   rawBtn.addEventListener('click', () => actions.toggleRaw());
   reloadBtn.addEventListener('click', () => actions.reload());
   printBtn.addEventListener('click', () => window.print());
+  zoomOutBtn.addEventListener('click', () => actions.zoom(-1));
+  zoomInBtn.addEventListener('click', () => actions.zoom(1));
+  zoomResetBtn.addEventListener('click', () => actions.zoom(0));
+  translateSelect.addEventListener('change', () => actions.translate(translateSelect.value || null));
+  translateRetry.addEventListener('click', () => actions.translate(translateSelect.value || null));
   settingsBtn.addEventListener('click', () => actions.openSettings());
   toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
@@ -109,7 +151,7 @@ export function buildShell({ actions }) {
 
   return {
     root, sidebar, tocNav, article, meta, rawView, rawCode, page, toolbar,
-    buttons: { outlineBtn, themeBtn, codeBtn, schemeBtn, rawBtn, reloadBtn, printBtn, settingsBtn },
+    buttons: { zoomOutBtn, zoomResetBtn, zoomInBtn, outlineBtn, themeBtn, codeBtn, schemeBtn, rawBtn, reloadBtn, printBtn, settingsBtn },
     menus: { themeMenu, codeMenu },
     setOutline(open) {
       root.classList.toggle('mdl-toc-open', open);
@@ -128,6 +170,19 @@ export function buildShell({ actions }) {
         sidebar.remove();
         outlineBtn.remove();
       }
+    },
+    setZoom(level, { canZoomOut, canZoomIn }) {
+      zoomResetBtn.textContent = `${Math.round(level * 100)}%`;
+      zoomResetBtn.setAttribute('aria-label', `Reset zoom (now ${Math.round(level * 100)}%)`);
+      zoomOutBtn.disabled = !canZoomOut;
+      zoomInBtn.disabled = !canZoomIn;
+    },
+    setTranslateStatus({ state, text = '' }) {
+      translateStatus.textContent = text;
+      translateWrap.dataset.state = state;
+      translateSelect.setAttribute('aria-busy', String(state === 'busy'));
+      translateRetry.hidden = state !== 'retry';
+      if (state === 'error') translateSelect.value = '';
     },
     setRaw(on) {
       rawBtn.setAttribute('aria-pressed', String(on));

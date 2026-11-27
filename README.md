@@ -41,6 +41,12 @@ tracking, and nothing sent anywhere.
 - Reading-progress bar, copy buttons on code blocks, optional line numbers,
   permalinks on headings, horizontally scrollable tables.
 - Raw source view, also syntax highlighted.
+- Translate the document from a list box in the toolbar, using Chrome's
+  built-in on-device translator (Chrome 138 or later). The text never leaves
+  your computer; code, math and diagrams stay as written. Chrome downloads a
+  language pack the first time a language is used.
+- Zoom in, zoom out and reset from the toolbar. Zoom scales images, tables and
+  diagrams along with the text, and the level is remembered.
 - Adjustable body and code font, text size, line height, content width and
   paragraph spacing, plus a custom CSS escape hatch.
 - Scroll position is remembered per document; print stylesheet included.
@@ -52,6 +58,8 @@ tracking, and nothing sent anywhere.
 | `o`       | Open or close the outline (when it is switched on) |
 | `r`       | Toggle the raw source  |
 | `d`       | Light / dark           |
+| `+` / `-` | Zoom in / out          |
+| `0`       | Reset zoom to 100%     |
 | `Shift+P` | Print                  |
 | `g` / `G` | Top / bottom           |
 
