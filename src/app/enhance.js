@@ -167,6 +167,28 @@ function decorateHeadings(article) {
 
 /* ---------------------------------------------------------------- tables */
 
+/**
+ * Makes copied tables paste as a complete grid. Chrome serialises the
+ * selection only after the copy event's listeners return, reading the styles
+ * in force at that moment, so switching on the copy-only table rules here
+ * changes what lands on the clipboard and nothing else. The `border` attribute
+ * is for editors that strip inline styles but keep presentational attributes.
+ * Everything is switched back before the next paint, so the page never shows it.
+ */
+export function installCopyStyling(article) {
+  document.addEventListener('copy', () => {
+    const root = document.documentElement;
+    if (root.classList.contains('mdl-copying')) return;
+    const tables = [...article.querySelectorAll('.mdl-table-wrap > table:not([border])')];
+    root.classList.add('mdl-copying');
+    for (const table of tables) table.setAttribute('border', '1');
+    requestAnimationFrame(() => {
+      root.classList.remove('mdl-copying');
+      for (const table of tables) table.removeAttribute('border');
+    });
+  });
+}
+
 function decorateTables(article) {
   for (const wrap of article.querySelectorAll('.mdl-table-wrap')) {
     const update = () => {

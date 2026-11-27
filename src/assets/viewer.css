@@ -701,6 +701,20 @@ html.mdl-host :focus-visible {
 
 .mdl-content tbody tr:nth-child(even) { background: var(--mdl-table-stripe); }
 
+/*
+ * How a table looks for the instant a copy is serialised (see
+ * installCopyStyling). Chrome writes each copied cell's matched rules into the
+ * pasted HTML, and the rules above draw the grid out of per-side borders that
+ * the last column and row then switch off, with the outer frame on a wrapper
+ * div. Rich-text editors that drop the wrapper or rewrite per-side borders keep
+ * only their own defaults, which commonly outline header cells but not body
+ * cells, so the body row arrives with no vertical lines. A full border
+ * shorthand on every cell and on the table survives those editors.
+ */
+:root.mdl-copying .mdl-table-wrap { border: 0; border-radius: 0; }
+:root.mdl-copying .mdl-content table,
+:root.mdl-copying .mdl-content :is(th, td) { border: 1px solid var(--mdl-border); }
+
 /* ----------------------------------------------------------------- code */
 
 .mdl-content code,

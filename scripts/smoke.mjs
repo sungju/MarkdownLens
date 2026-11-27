@@ -552,6 +552,63 @@ const PAGES = [
     ],
   },
   {
+    // A table selected and copied must paste as a complete grid. Chrome writes
+    // each cell's matched rules into the clipboard HTML, and the viewer's own
+    // grid is per-side borders with the frame on a wrapper div, which editors
+    // rebuilt as a table with no vertical lines in its body. The page itself
+    // must be back to its usual look once the copy is done.
+    name: 'copy-table',
+    url: ({ fixture }) => `${fixture}/fixture.md`,
+    settle: 3000,
+    permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'],
+    actions: [{
+      gesture: true,
+      wait: 500,
+      expression: `(() => {
+        const range = document.createRange();
+        range.selectNode(document.querySelector('.mdl-table-wrap'));
+        getSelection().removeAllRanges();
+        getSelection().addRange(range);
+        document.execCommand('copy');
+      })()`,
+    }],
+    probe: async () => {
+      let html = '';
+      try {
+        for (const item of await navigator.clipboard.read()) {
+          if (item.types.includes('text/html')) html = await (await item.getType('text/html')).text();
+        }
+      } catch (error) {
+        html = `__unreadable__ ${error.name}`;
+      }
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const sides = ['Top', 'Right', 'Bottom', 'Left'];
+      const boxed = (node) => !!node && sides.every((side) =>
+        parseFloat(node.style[`border${side}Width`]) >= 1 && node.style[`border${side}Style`] === 'solid');
+      const cells = [...doc.querySelectorAll('th, td')];
+      const table = doc.querySelector('table');
+      const live = document.querySelector('.mdl-table-wrap table');
+      return {
+        cells: cells.length,
+        bodyCells: doc.querySelectorAll('tbody td').length,
+        boxedCells: cells.filter(boxed).length,
+        tableBoxed: boxed(table),
+        tableAttr: table?.getAttribute('border') ?? null,
+        copying: document.documentElement.classList.contains('mdl-copying'),
+        liveAttr: live.hasAttribute('border'),
+        liveLastRight: getComputedStyle(live.querySelector('tbody tr:last-child td:last-child')).borderRightWidth,
+        liveWrap: getComputedStyle(document.querySelector('.mdl-table-wrap')).borderTopWidth,
+      };
+    },
+    expect: (r) => [
+      ['copies the table as HTML', r.cells > 0 && r.bodyCells > 0],
+      ['gives every copied cell all four borders', r.boxedCells === r.cells],
+      ['frames the copied table itself', r.tableBoxed && r.tableAttr === '1'],
+      ['puts the page back after the copy',
+        !r.copying && !r.liveAttr && r.liveLastRight === '0px' && r.liveWrap === '1px'],
+    ],
+  },
+  {
     // Nothing saved yet, as on a fresh install: the outline stays out of the
     // page until the reader asks for it.
     name: 'outline-default',
@@ -1224,8 +1281,11 @@ async function visit(client, page, urls) {
     await sleep(600);
   }
 
-  for (const { expression, wait } of page.actions || []) {
-    const { exceptionDetails } = await client.send('Runtime.evaluate', { expression }, sessionId);
+  // `gesture` runs an action as if the reader had just pressed something,
+  // which is what lets it start a copy with execCommand.
+  for (const { expression, wait, gesture } of page.actions || []) {
+    const { exceptionDetails } = await client.send('Runtime.evaluate',
+      { expression, userGesture: !!gesture }, sessionId);
     if (exceptionDetails) {
       problems.push(`action failed: ${exceptionDetails.exception?.description || exceptionDetails.text}`);
     }

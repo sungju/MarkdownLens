@@ -35,7 +35,7 @@ at is the file on GitHub, then work through `UPLOAD.md` in the folder
 
 ## Testing discipline
 
-`npm test` is the whole suite: 211 checks across 31 lanes. Three run in
+`npm test` is the whole suite: 215 checks across 32 lanes. Three run in
 Node before Chrome starts (`store-readiness`, `live-reload-scope`,
 `orphaned-context`); the rest drive a headless Chrome over the DevTools protocol.
 

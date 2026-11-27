@@ -9,7 +9,7 @@ import { applyAppearance, installBaseStyles, ZOOM_MIN, ZOOM_MAX, installMathStyl
 import { renderMarkdown, highlightSource } from './render.js';
 import { buildShell } from './shell.js';
 import { buildToc } from './toc.js';
-import { enhance } from './enhance.js';
+import { enhance, installCopyStyling } from './enhance.js';
 import { formatValue } from './frontmatter.js';
 import { createWatcher } from './watch.js';
 import { createTranslation, translationAvailable } from './translate.js';
@@ -84,6 +84,7 @@ export async function boot(context) {
   restoreScroll();
   installKeyboardShortcuts();
   installMessageBridge();
+  installCopyStyling(state.shell.article);
 
   onSettingsChanged(async (next, patch) => {
     state.settings = next;
